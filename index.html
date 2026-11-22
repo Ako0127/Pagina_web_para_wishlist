@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mi Wishlist de Navidad</title>
+<title>Wishlist de Navidad</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -15,6 +15,7 @@
     --muted: #6b746f;
     --line: #ece7e0;
     --red: #c4524f;
+    --red-soft: #f6e3e2;
     --green: #2f5d46;
     --green-soft: #e3ede7;
     --gold: #c8a24a;
@@ -37,8 +38,9 @@
   }
   body.modal-open { overflow: hidden; }
   .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 20px 64px; }
-  button, select { font: inherit; color: inherit; }
+  button, select, input, textarea { font: inherit; color: inherit; }
   :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  [hidden] { display: none !important; }
 
   /* ---------- Nieve ---------- */
   #snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; transition: opacity .6s; }
@@ -48,7 +50,7 @@
     width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line);
     background: rgba(255,255,255,.85); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
     box-shadow: var(--shadow); cursor: pointer; display: grid; place-items: center;
-    color: var(--gold); transition: transform .2s, color .2s, background .2s;
+    color: var(--gold); transition: transform .2s, color .2s;
   }
   .snow-toggle:hover { transform: rotate(30deg); }
   .snow-toggle svg { width: 20px; height: 20px; }
@@ -58,21 +60,36 @@
   }
 
   /* ---------- Encabezado ---------- */
-  header { text-align: center; padding: 56px 0 28px; }
-  .ornament { display: inline-flex; gap: 8px; align-items: center; color: var(--gold); margin-bottom: 12px; }
+  header { text-align: center; padding: 48px 0 28px; }
+  .ornament { display: inline-flex; gap: 8px; align-items: center; color: var(--gold); margin-bottom: 18px; }
   .ornament span { width: 40px; height: 1px; background: currentColor; opacity: .6; }
+  .tabs {
+    display: inline-flex; padding: 4px; gap: 4px; margin-bottom: 22px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow);
+  }
+  .tab {
+    border: 0; background: transparent; cursor: pointer; border-radius: 999px;
+    padding: 9px 20px; min-height: 42px; font-size: .92rem; font-weight: 500; color: var(--muted);
+    transition: background .25s, color .25s, box-shadow .25s; white-space: nowrap;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-selected="true"] { background: var(--green); color: #fff; box-shadow: 0 4px 12px rgba(47,93,70,.2); }
+  .tab b { font-family: "Fraunces", Georgia, serif; font-weight: 500; }
   h1 {
     font-family: "Fraunces", Georgia, serif;
     font-weight: 700;
     font-size: clamp(2rem, 5vw, 3.2rem);
     letter-spacing: -.02em;
+    line-height: 1.1;
     color: var(--green);
   }
   h1 em { font-style: normal; color: var(--red); }
   header p { color: var(--muted); margin-top: 8px; }
+  .swap { transition: opacity .2s ease; }
+  .swap.fading { opacity: 0; }
 
   /* ---------- Filtros y orden ---------- */
-  .controls { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-bottom: 28px; }
+  .controls { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-bottom: 24px; }
   .pills {
     display: flex; gap: 8px; max-width: 100%; overflow-x: auto; padding: 4px 2px;
     scroll-behavior: smooth; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
@@ -90,17 +107,75 @@
   .pill .count { font-size: .75rem; color: #a3aaa6; font-weight: 500; }
   .pill.active { background: var(--green); border-color: var(--green); color: #fff; box-shadow: 0 4px 12px rgba(47,93,70,.18); }
   .pill.active .count { color: rgba(255,255,255,.7); }
-  .sort-row { width: 100%; display: flex; justify-content: flex-end; }
-  .sort {
-    display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: .85rem;
-  }
-  .sort select {
+  .tool-row { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .sort { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: .85rem; margin-left: auto; }
+  .sort select, .field select {
     appearance: none; -webkit-appearance: none; cursor: pointer;
     border: 1px solid var(--line); background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%236b746f' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;
     border-radius: 10px; padding: 8px 34px 8px 12px; font-size: .88rem; color: var(--ink); min-height: 40px;
     transition: border-color .2s;
   }
   .sort select:hover { border-color: var(--gold); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    font-weight: 500; font-size: .88rem; cursor: pointer; text-decoration: none;
+    border: 1px solid transparent; border-radius: 10px; padding: 9px 14px; min-height: 40px;
+    transition: background .2s, border-color .2s, color .2s, transform .15s, box-shadow .2s; white-space: nowrap;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn svg { width: 15px; height: 15px; flex: none; }
+  .btn-ghost { background: var(--surface); border-color: var(--line); color: var(--ink); }
+  .btn-ghost:hover { border-color: var(--gold); color: #8a6d24; }
+  .btn-edit { background: transparent; border-color: var(--line); color: var(--muted); border-style: dashed; }
+  .btn-edit:hover { border-color: var(--gold); color: #8a6d24; background: var(--gold-soft); }
+  .btn-edit.on { background: var(--green); border-color: var(--green); border-style: solid; color: #fff; }
+  .btn-primary { background: var(--red); color: #fff; }
+  .btn-primary:hover { background: #b04542; box-shadow: 0 6px 16px rgba(196,82,79,.22); }
+  .btn-green { background: var(--green); color: #fff; }
+  .btn-green:hover { background: #244a37; }
+  .btn-danger { background: var(--surface); border-color: var(--line); color: var(--red); }
+  .btn-danger:hover { background: var(--red-soft); border-color: var(--red); }
+
+  /* ---------- Aviso de borrador ---------- */
+  .draft-note {
+    display: flex; gap: 10px; align-items: flex-start; margin-bottom: 18px;
+    background: var(--gold-soft); border: 1px solid #ecdcb0; color: #6e5718;
+    border-radius: 12px; padding: 10px 14px; font-size: .85rem;
+  }
+  .draft-note svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
+
+  /* ---------- Editor de Linda ---------- */
+  .editor {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 22px; margin-bottom: 26px;
+    animation: pop .3s ease both;
+  }
+  .editor-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .editor h2 { font-family: "Fraunces", Georgia, serif; font-weight: 500; font-size: 1.3rem; color: var(--green); }
+  .editor-head p { color: var(--muted); font-size: .85rem; }
+  .form-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; grid-column: span 2; }
+  .field.wide { grid-column: span 3; }
+  .field.full { grid-column: 1 / -1; }
+  .field label { font-size: .82rem; font-weight: 500; }
+  .field label .opt { color: var(--muted); font-weight: 400; }
+  .field input, .field textarea {
+    width: 100%; padding: 10px 12px; font-size: 16px;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+    transition: border-color .2s, box-shadow .2s, background .2s;
+  }
+  .field textarea { resize: vertical; min-height: 64px; line-height: 1.45; }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--green); background: #fff; box-shadow: 0 0 0 3px var(--green-soft); }
+  .field select { font-size: 16px; width: 100%; min-height: 44px; }
+  .form-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .publish {
+    margin-top: 20px; padding-top: 18px; border-top: 1px dashed var(--line);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .publish h3 { font-size: .9rem; font-weight: 600; }
+  .publish p { font-size: .82rem; color: var(--muted); max-width: 70ch; }
+  .publish-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
   /* ---------- Cuadrícula ---------- */
   .grid {
@@ -109,12 +184,14 @@
   }
   .grid.fading { opacity: 0; transform: translateY(6px); }
   .card {
+    position: relative;
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
     overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column;
-    transition: transform .25s, box-shadow .25s;
+    transition: transform .25s, box-shadow .25s, border-color .25s;
     animation: pop .4s ease both;
   }
   .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+  .card.editing-this { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft), var(--shadow); }
   @keyframes pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
   .card-img {
@@ -135,12 +212,19 @@
     position: absolute; top: 10px; left: 10px; font-size: .7rem; font-weight: 600; letter-spacing: .03em;
     padding: 4px 10px; border-radius: 999px; background: var(--gold-soft); color: #8a6d24;
   }
+  .card.tools-on .cat-tag { top: auto; bottom: 10px; }   /* deja libre la esquina para editar/eliminar */
+  .card-tools { position: absolute; top: 8px; right: 8px; z-index: 2; display: flex; gap: 6px; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line);
+    background: rgba(255,255,255,.95); cursor: pointer; display: grid; place-items: center; color: var(--muted);
+    box-shadow: 0 2px 8px rgba(31,42,36,.08); transition: all .2s;
+  }
+  .icon-btn svg { width: 16px; height: 16px; }
+  .icon-btn.edit:hover { background: var(--gold-soft); border-color: var(--gold); color: #8a6d24; }
+  .icon-btn.del:hover { background: var(--red-soft); border-color: var(--red); color: var(--red); }
 
   .card-body { padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-  .card-title {
-    font-family: "Fraunces", Georgia, serif; font-size: 1.1rem; font-weight: 500;
-    line-height: 1.3; word-break: break-word;
-  }
+  .card-title { font-family: "Fraunces", Georgia, serif; font-size: 1.1rem; font-weight: 500; line-height: 1.3; word-break: break-word; }
   .card-notes {
     font-size: .82rem; color: var(--muted); line-height: 1.45;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -189,9 +273,10 @@
   .modal-img img { max-width: 100%; max-height: 70vh; object-fit: contain; display: block; }
   .modal-info { padding: 32px 28px 28px; display: flex; flex-direction: column; gap: 14px; }
   .modal-info .cat-tag { position: static; align-self: flex-start; }
-  .modal-info h2 { font-family: "Fraunces", Georgia, serif; font-weight: 500; font-size: 1.5rem; line-height: 1.25; color: var(--ink); padding-right: 28px; word-break: break-word; }
+  .modal-info h2 { font-family: "Fraunces", Georgia, serif; font-weight: 500; font-size: 1.5rem; line-height: 1.25; padding-right: 28px; word-break: break-word; }
   .modal-price { font-size: 1.4rem; font-weight: 600; color: var(--green); }
-  .modal-notes { font-size: .95rem; color: var(--ink); line-height: 1.6; white-space: pre-line; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .modal-price.none { color: #a3aaa6; font-size: 1rem; font-weight: 400; }
+  .modal-notes { font-size: .95rem; line-height: 1.6; white-space: pre-line; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
   .modal-foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 6px; }
   .modal-foot .domain { text-align: center; }
   .modal-close {
@@ -202,7 +287,23 @@
   .modal-close:hover { color: var(--red); border-color: var(--red); transform: rotate(90deg); }
   .modal-close svg { width: 18px; height: 18px; }
 
+  /* ---------- Aviso flotante ---------- */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; z-index: 60; transform: translate(-50%, 140px);
+    background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 12px; font-size: .9rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,.2); transition: transform .3s ease, opacity .3s, visibility .3s;
+    display: flex; gap: 14px; align-items: center; max-width: calc(100% - 100px);
+    opacity: 0; visibility: hidden;
+  }
+  .toast.show { transform: translate(-50%, 0); opacity: 1; visibility: visible; }
+  .toast button { background: none; border: 0; color: var(--gold); font-weight: 600; cursor: pointer; padding: 4px; }
+
   /* ---------- Responsivo ---------- */
+  @media (max-width: 760px) {
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .field, .field.wide { grid-column: span 1; }
+    .field.full, .field.name { grid-column: 1 / -1; }
+  }
   @media (max-width: 720px) {
     .modal { padding: 12px; align-items: end; }
     .modal-box { grid-template-columns: 1fr; max-height: calc(100vh - 24px); border-radius: 20px 20px 16px 16px; }
@@ -213,11 +314,14 @@
   }
   @media (max-width: 600px) {
     .pills { justify-content: flex-start; width: calc(100% + 40px); margin: 0 -20px; padding: 4px 20px; }
-    .sort-row { justify-content: flex-end; }
+    .editor { padding: 18px 16px; }
+    .publish-actions .btn, .form-actions .btn { flex: 1 1 auto; }
   }
   @media (min-width: 601px) { .pills { justify-content: center; flex-wrap: wrap; overflow: visible; } }
   @media (max-width: 520px) {
-    header { padding: 36px 0 22px; }
+    header { padding: 32px 0 22px; }
+    .tabs { width: 100%; }
+    .tab { flex: 1; padding: 9px 10px; font-size: .88rem; }
     .grid { grid-template-columns: 1fr 1fr; gap: 12px; }
     .card-body { padding: 12px; }
     .card-title { font-size: .98rem; }
@@ -225,6 +329,8 @@
     .meta { flex-direction: column; gap: 2px; align-items: flex-start; }
     .btn-store { font-size: .82rem; padding: 9px 10px; }
     .cat-tag { font-size: .65rem; padding: 3px 8px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .field, .field.wide { grid-column: 1 / -1; }
   }
   @media (max-width: 360px) { .grid { grid-template-columns: 1fr; } }
   @media (prefers-reduced-motion: reduce) {
@@ -241,14 +347,22 @@
     <div class="ornament"><span></span>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2H22l-6 4.6 2.3 7.2L12 16.5 5.7 21l2.3-7.2-6-4.6h7.6z"/></svg>
     <span></span></div>
-    <!-- Puedes cambiar el título y el subtítulo aquí -->
-    <h1>Mi Wishlist <em></em></h1>
-    <p>Hola, estas son mis opciones jiji</p>
+    <div>
+      <div class="tabs" role="tablist" aria-label="Elegir lista">
+        <button type="button" class="tab" role="tab" id="tab-ian" data-lista="ian" aria-controls="grid">Wishlist de <b>Ian</b></button>
+        <button type="button" class="tab" role="tab" id="tab-linda" data-lista="linda" aria-controls="grid">Wishlist de <b>Linda</b></button>
+      </div>
+    </div>
+    <div class="swap" id="heading">
+      <h1 id="title">Wishlist</h1>
+      <p id="subtitle"></p>
+    </div>
   </header>
 
   <nav class="controls" aria-label="Filtros">
     <div class="pills" id="pills" role="tablist" aria-label="Categorías"></div>
-    <div class="sort-row">
+    <div class="tool-row">
+      <button type="button" class="btn btn-edit" id="edit-toggle" hidden>✏️ Editar mi lista</button>
       <label class="sort" for="sort">Ordenar
         <select id="sort">
           <option value="default">Orden por defecto</option>
@@ -258,6 +372,73 @@
       </label>
     </div>
   </nav>
+
+  <div class="draft-note" id="draft-note" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>
+    <span>Estás viendo cambios guardados <b>solo en este navegador</b>. Para que todos los vean, usa “Descargar index.html actualizado” y reemplaza el archivo en GitHub.</span>
+  </div>
+
+  <!-- Editor (solo para la lista de Linda) -->
+  <section class="editor" id="editor" hidden aria-label="Editar lista de Linda">
+    <div class="editor-head">
+      <h2 id="form-title">Agregar regalo</h2>
+      <p>Los cambios se guardan solos en este navegador.</p>
+    </div>
+    <form id="gift-form" autocomplete="off" novalidate>
+      <div class="form-grid">
+        <div class="field wide name">
+          <label for="f-nombre">Nombre del regalo</label>
+          <input type="text" id="f-nombre" maxlength="140" required placeholder="Ej. Paleta de sombras">
+        </div>
+        <div class="field">
+          <label for="f-categoria">Categoría</label>
+          <select id="f-categoria"></select>
+        </div>
+        <div class="field" style="grid-column: span 1;">
+          <label for="f-precio">Precio <span class="opt">(opcional)</span></label>
+          <input type="number" id="f-precio" min="0" step="0.01" inputmode="decimal" placeholder="0.00">
+        </div>
+        <div class="field wide">
+          <label for="f-tienda">URL de compra <span class="opt">(opcional)</span></label>
+          <input type="url" id="f-tienda" placeholder="https://tienda.com/producto">
+        </div>
+        <div class="field wide">
+          <label for="f-imagen">URL de la imagen <span class="opt">(opcional)</span></label>
+          <input type="url" id="f-imagen" placeholder="https://.../foto.jpg">
+        </div>
+        <div class="field full">
+          <label for="f-notas">Notas <span class="opt">(talla, tono, color…)</span></label>
+          <textarea id="f-notas" maxlength="500" placeholder="Ej. Tono nude, talla M"></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="form-submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Agregar a mi lista</span>
+        </button>
+        <button type="button" class="btn btn-ghost" id="form-cancel" hidden>Cancelar edición</button>
+      </div>
+    </form>
+
+    <div class="publish">
+      <h3>Guardar para todos</h3>
+      <p>Tus cambios por ahora solo se ven en este navegador. Descarga el <b>index.html</b> actualizado y reemplázalo en el repositorio de GitHub para que queden públicos.</p>
+      <div class="publish-actions">
+        <button type="button" class="btn btn-green" id="download-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+          Descargar index.html actualizado
+        </button>
+        <button type="button" class="btn btn-ghost" id="copy-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg>
+          Copiar datos para el código
+        </button>
+        <button type="button" class="btn btn-danger" id="restore-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>
+          Restaurar lista publicada
+        </button>
+      </div>
+    </div>
+  </section>
 
   <main class="grid" id="grid" aria-live="polite"></main>
 
@@ -291,9 +472,11 @@
   </div>
 </div>
 
+<div class="toast" id="toast" role="status"><span id="toast-msg"></span><button type="button" id="toast-action" hidden>Deshacer</button></div>
+
 <script>
 /* =====================================================================
-   ✏️  EDITA TU LISTA AQUÍ
+   ✏️  EDITA TUS LISTAS AQUÍ
    ---------------------------------------------------------------------
    Cada regalo va entre llaves { } y separado por una coma.
    - nombre:    el nombre del regalo (entre comillas)
@@ -304,10 +487,21 @@
    - imagen:    enlace a una foto (vacío "" = imagen por defecto)
    - tienda:    enlace a la tienda (vacío "" = botón desactivado)
 
-   Para AGREGAR un regalo: copia un bloque { ... }, pégalo y cambia los datos.
-   Para QUITAR un regalo: borra su bloque { ... } completo.
+   Enlaces directos:  tusitio.github.io/repo/#ian   o   tusitio.github.io/repo/#linda
+                      (también funciona ?lista=linda)
    ===================================================================== */
-const REGALOS = [
+
+// Título y subtítulo de cada lista
+const LISTAS = {
+  ian:   { nombre: "Ian",   subtitulo: "Hola, estas son mis opciones jiji" },
+  linda: { nombre: "Linda", subtitulo: "Mis ideas favoritas para esta Navidad" },
+};
+
+// Píldoras que siempre se muestran (en este orden). Si usas otra categoría, se agrega sola al final.
+const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
+
+// ---------------------------- Lista de Ian ----------------------------
+const REGALOS_IAN = [
   {
     nombre: "PERFUME ARMAF CLUB DE NUIT PRECIUEX EDP (55 ML)",
     categoria: "Perfumes",
@@ -366,7 +560,7 @@ const REGALOS = [
   },
   {
     nombre: "SOPORTE PARA LAPTOP",
-    categoria: "Electrónicos",
+    categoria: "Accesorios",
     precio: "",
     notas: "",
     imagen: "",
@@ -374,7 +568,7 @@ const REGALOS = [
   },
   {
     nombre: "Taza navideña",
-    categoria: "Accesorios",
+    categoria: "",
     precio: "",
     notas: "",
     imagen: "",
@@ -382,11 +576,49 @@ const REGALOS = [
   },
 ];
 
-// Píldoras que siempre se muestran (en este orden). Si usas otra categoría, se agrega sola al final.
-const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
-/* ===================== No hace falta editar debajo de esta línea ===================== */
+// --------------------------- Lista de Linda ---------------------------
+// Linda puede editar esta lista desde la página con "✏️ Editar mi lista".
+// No borres las dos marcas LINDA:INICIO y LINDA:FIN: la página las usa para guardar.
+/*LINDA:INICIO*/
+const REGALOS_LINDA = [
+  {
+    nombre: "Paleta de sombras (ejemplo)",
+    categoria: "Maquillaje",
+    precio: 25,
+    notas: "Tonos cálidos o nude",
+    imagen: "",
+    tienda: ""
+  },
+  {
+    nombre: "Audífonos inalámbricos (ejemplo)",
+    categoria: "Electrónicos",
+    precio: 60,
+    notas: "Color blanco o rosado",
+    imagen: "",
+    tienda: ""
+  },
+  {
+    nombre: "Bolso pequeño (ejemplo)",
+    categoria: "Accesorios",
+    precio: "",
+    notas: "",
+    imagen: "",
+    tienda: ""
+  },
+];
+/*LINDA:FIN*/
+</script>
 
+<script>
+/* ===================== No hace falta editar debajo de esta línea ===================== */
 {
+  // Copia del código fuente tal como cargó (se usa al descargar el index.html actualizado)
+  const SNAPSHOT = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  const MARK_START = '/*LINDA' + ':INICIO*/';
+  const MARK_END = '/*LINDA' + ':FIN*/';
+  const DRAFT_KEY = 'wishlist-linda-borrador';
+  const FIELDS = ['nombre', 'categoria', 'precio', 'notas', 'imagen', 'tienda'];
+
   const FALLBACK_IMG = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
       <rect width="400" height="300" fill="#f4efe8"/>
@@ -403,8 +635,12 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
         <circle cx="70" cy="240" r="5"/><circle cx="330" cy="235" r="4"/>
       </g>
     </svg>`);
-  const ICON_EXT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
-  const ICON_ZOOM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg>';
+  const ICON = {
+    ext: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+    zoom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg>',
+    edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'
+  };
 
   const $ = id => document.getElementById(id);
   const money = new Intl.NumberFormat('es-PA', { style: 'currency', currency: 'USD', currencyDisplay: 'narrowSymbol' });
@@ -424,9 +660,7 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
       return /^(https?|file):$/.test(u.protocol) ? u.href : '';
     } catch { return ''; }
   }
-  function domainOf(url) {
-    try { return new URL(url).hostname.replace(/^www\./i, ''); } catch { return ''; }
-  }
+  function domainOf(url) { try { return new URL(url).hostname.replace(/^www\./i, ''); } catch { return ''; } }
   function parsePrice(v) {
     const t = String(v ?? '').replace(/[^\d.,]/g, '').replace(',', '.');
     const n = t === '' ? NaN : Number(t);
@@ -434,76 +668,175 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
   }
   const clean = v => String(v ?? '').trim();
   const keyOf = s => s.toLocaleLowerCase('es').normalize('NFD').replace(/[̀-ͯ]/g, '');
-
-  // ---------- Datos normalizados (sin duplicados) ----------
-  const seen = new Set();
-  const items = (Array.isArray(REGALOS) ? REGALOS : []).reduce((acc, r, i) => {
-    const nombre = clean(r && r.nombre);
-    if (!nombre) return acc;
-    const tienda = safeUrl(r.tienda);
-    const dupKey = keyOf(nombre) + '|' + tienda;
-    if (seen.has(dupKey)) return acc;
-    seen.add(dupKey);
-    acc.push({
-      i, nombre, tienda,
-      categoria: clean(r.categoria),
-      notas: clean(r.notas),
-      precio: parsePrice(r.precio),
-      imagen: safeImg(r.imagen),
-      dominio: tienda ? domainOf(tienda) : ''
-    });
-    return acc;
-  }, []);
-
-  // Nombre de categoría tal como aparece en la lista fija (ignora mayúsculas y tildes)
   const catLabel = c => CATEGORIAS.find(x => keyOf(x) === keyOf(c)) || c;
-  items.forEach(it => { if (it.categoria) it.categoria = catLabel(it.categoria); });
 
-  const extras = [...new Set(items.map(it => it.categoria).filter(c => c && !CATEGORIAS.includes(c)))];
-  const allCats = ['Todos', ...CATEGORIAS, ...extras];
+  // Regalo "crudo" con los 6 campos, limpio (lo que se guarda y se exporta)
+  function rawGift(r) {
+    r = r || {};
+    const p = parsePrice(r.precio);
+    return {
+      nombre: clean(r.nombre).slice(0, 140),
+      categoria: r.categoria ? catLabel(clean(r.categoria)) : '',
+      precio: p === null ? '' : Math.round(p * 100) / 100,
+      notas: clean(r.notas).slice(0, 500),
+      imagen: clean(r.imagen),
+      tienda: clean(r.tienda)
+    };
+  }
+  const rawList = arr => (Array.isArray(arr) ? arr : []).map(rawGift).filter(r => r.nombre);
 
-  let active = 'Todos';
-  let order = 'default';
-
-  // ---------- Píldoras ----------
-  const pills = $('pills');
-  allCats.forEach(cat => {
-    const n = cat === 'Todos' ? items.length : items.filter(it => it.categoria === cat).length;
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'pill' + (cat === active ? ' active' : '');
-    b.dataset.cat = cat;
-    b.setAttribute('role', 'tab');
-    b.setAttribute('aria-selected', String(cat === active));
-    b.innerHTML = '<span></span><span class="count"></span>';
-    b.firstChild.textContent = cat;
-    b.lastChild.textContent = n;
-    b.addEventListener('click', () => {
-      if (active === cat) return;
-      active = cat;
-      pills.querySelectorAll('.pill').forEach(p => {
-        const on = p.dataset.cat === cat;
-        p.classList.toggle('active', on);
-        p.setAttribute('aria-selected', String(on));
+  // Regalo listo para mostrar (sin duplicados); "i" es su posición en la lista original
+  function viewItems(list) {
+    const seen = new Set();
+    const out = [];
+    list.forEach((r, i) => {
+      const tienda = safeUrl(r.tienda);
+      const k = keyOf(r.nombre) + '|' + tienda;
+      if (seen.has(k)) return;
+      seen.add(k);
+      out.push({
+        i, nombre: r.nombre, tienda,
+        categoria: r.categoria, notas: r.notas,
+        precio: parsePrice(r.precio),
+        imagen: safeImg(r.imagen),
+        dominio: tienda ? domainOf(tienda) : ''
       });
-      b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      update();
     });
-    pills.appendChild(b);
-  });
+    return out;
+  }
 
-  $('sort').addEventListener('change', e => { order = e.target.value; update(); });
+  // ---------- Datos ----------
+  const PUBLISHED_LINDA = rawList(typeof REGALOS_LINDA !== 'undefined' ? REGALOS_LINDA : []);
+  const data = {
+    ian: rawList(typeof REGALOS_IAN !== 'undefined' ? REGALOS_IAN : []),
+    linda: PUBLISHED_LINDA.map(r => ({ ...r }))
+  };
+  const state = { ian: { cat: 'Todos', order: 'default' }, linda: { cat: 'Todos', order: 'default' } };
+  let current = 'ian';
+  let editing = false;
+  let editIndex = null;
+
+  // Borrador local de Linda
+  function toCode(list) {
+    const q = v => JSON.stringify(String(v)).replace(/</g, '\\u003c');
+    const body = list.map(r => '  {\n' + FIELDS.map(k =>
+      '    ' + k + ': ' + (k === 'precio' ? (r.precio === '' ? '""' : String(r.precio)) : q(r[k]))
+    ).join(',\n') + '\n  },').join('\n');
+    return 'const REGALOS_LINDA = [\n' + body + (list.length ? '\n' : '') + '];';
+  }
+  const publishedCode = toCode(PUBLISHED_LINDA);
+  const isDirty = () => toCode(data.linda) !== publishedCode;
+
+  function loadDraft() {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const list = rawList(JSON.parse(raw));
+      if (toCode(list) === publishedCode) { localStorage.removeItem(DRAFT_KEY); return; } // ya está publicado
+      data.linda = list;
+    } catch {}
+  }
+  function saveDraft() {
+    try {
+      if (isDirty()) localStorage.setItem(DRAFT_KEY, JSON.stringify(data.linda));
+      else localStorage.removeItem(DRAFT_KEY);
+    } catch { toast('No se pudo guardar en este navegador'); }
+    updateDraftNote();
+  }
+  function updateDraftNote() {
+    $('draft-note').hidden = !(current === 'linda' && isDirty());
+  }
+  loadDraft();
+
+  // ---------- Encabezado y pestañas ----------
+  const tabs = [...document.querySelectorAll('.tab')];
+  function paintHeader() {
+    const info = LISTAS[current] || { nombre: current, subtitulo: '' };
+    const t = $('title');
+    t.replaceChildren('Wishlist de ', Object.assign(document.createElement('em'), { textContent: info.nombre }));
+    $('subtitle').textContent = info.subtitulo || '';
+    document.title = 'Wishlist de ' + info.nombre;
+    tabs.forEach(b => b.setAttribute('aria-selected', String(b.dataset.lista === current)));
+  }
+
+  function listFromUrl() {
+    const h = location.hash.replace('#', '').toLowerCase();
+    if (h === 'ian' || h === 'linda') return h;
+    const q = new URLSearchParams(location.search).get('lista');
+    if (q && (q.toLowerCase() === 'ian' || q.toLowerCase() === 'linda')) return q.toLowerCase();
+    return 'ian';
+  }
+
+  function switchTo(id, opts = {}) {
+    if (!data[id]) id = 'ian';
+    const changed = id !== current;
+    current = id;
+    if (id !== 'linda' && editing) setEditing(false);
+    if (!opts.silentUrl) {
+      try { history.replaceState(null, '', location.pathname + '#' + id); } catch { location.hash = id; }
+    }
+    $('edit-toggle').hidden = id !== 'linda';
+    $('sort').value = state[id].order;
+    updateDraftNote();
+    if (changed && !opts.instant) {
+      const head = $('heading');
+      head.classList.add('fading');
+      setTimeout(() => { paintHeader(); head.classList.remove('fading'); }, 180);
+      buildPills(); update();
+    } else {
+      paintHeader(); buildPills(); render();
+    }
+  }
+  tabs.forEach(b => b.addEventListener('click', () => switchTo(b.dataset.lista)));
+  window.addEventListener('hashchange', () => { const id = listFromUrl(); if (id !== current) switchTo(id, { silentUrl: true }); });
+
+  // ---------- Píldoras y orden ----------
+  const pills = $('pills');
+  function buildPills() {
+    const items = viewItems(data[current]);
+    const extras = [...new Set(items.map(it => it.categoria).filter(c => c && !CATEGORIAS.includes(c)))];
+    const cats = ['Todos', ...CATEGORIAS, ...extras];
+    if (!cats.includes(state[current].cat)) state[current].cat = 'Todos';
+    pills.replaceChildren();
+    cats.forEach(cat => {
+      const n = cat === 'Todos' ? items.length : items.filter(it => it.categoria === cat).length;
+      const b = document.createElement('button');
+      b.type = 'button';
+      const on = cat === state[current].cat;
+      b.className = 'pill' + (on ? ' active' : '');
+      b.dataset.cat = cat;
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', String(on));
+      b.innerHTML = '<span></span><span class="count"></span>';
+      b.firstChild.textContent = cat;
+      b.lastChild.textContent = n;
+      b.addEventListener('click', () => {
+        if (state[current].cat === cat) return;
+        state[current].cat = cat;
+        pills.querySelectorAll('.pill').forEach(p => {
+          const a = p.dataset.cat === cat;
+          p.classList.toggle('active', a);
+          p.setAttribute('aria-selected', String(a));
+        });
+        b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        update();
+      });
+      pills.appendChild(b);
+    });
+  }
+  $('sort').addEventListener('change', e => { state[current].order = e.target.value; update(); });
 
   // ---------- Tarjetas ----------
   const grid = $('grid');
-
   function visibleItems() {
-    let list = active === 'Todos' ? items.slice() : items.filter(it => it.categoria === active);
-    if (order !== 'default') {
-      const dir = order === 'asc' ? 1 : -1;
+    const st = state[current];
+    let list = viewItems(data[current]);
+    if (st.cat !== 'Todos') list = list.filter(it => it.categoria === st.cat);
+    if (st.order !== 'default') {
+      const dir = st.order === 'asc' ? 1 : -1;
       list.sort((a, b) => {
         if (a.precio === null && b.precio === null) return a.i - b.i;
-        if (a.precio === null) return 1;       // sin precio siempre al final
+        if (a.precio === null) return 1;      // sin precio siempre al final
         if (b.precio === null) return -1;
         return (a.precio - b.precio) * dir || a.i - b.i;
       });
@@ -519,22 +852,17 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
     img.addEventListener('error', () => { if (img.src !== FALLBACK_IMG) img.src = FALLBACK_IMG; });
     return img;
   }
-
   function fillStoreLink(a, url) {
     a.className = 'btn-store' + (url ? '' : ' disabled');
-    a.innerHTML = ICON_EXT + '<span></span>';
+    a.innerHTML = ICON.ext + '<span></span>';
     a.lastChild.textContent = url ? 'Ir a la tienda' : 'Sin enlace';
-    if (url) {
-      a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-      a.removeAttribute('aria-disabled');
-    } else {
-      a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true');
-    }
+    if (url) { a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.removeAttribute('aria-disabled'); }
+    else { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); }
   }
 
   function card(it, idx) {
     const el = document.createElement('article');
-    el.className = 'card';
+    el.className = 'card' + (editing && current === 'linda' && editIndex === it.i ? ' editing-this' : '');
     el.style.animationDelay = Math.min(idx * 50, 400) + 'ms';
 
     const imgBtn = document.createElement('button');
@@ -552,9 +880,26 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
     }
     const zoom = document.createElement('span');
     zoom.className = 'zoom';
-    zoom.innerHTML = ICON_ZOOM;
+    zoom.innerHTML = ICON.zoom;
     imgBtn.appendChild(zoom);
     imgBtn.addEventListener('click', () => openModal(it, imgBtn));
+    el.appendChild(imgBtn);
+
+    if (editing && current === 'linda') {
+      el.classList.add('tools-on');
+      const tools = document.createElement('div');
+      tools.className = 'card-tools';
+      const eb = document.createElement('button');
+      eb.type = 'button'; eb.className = 'icon-btn edit'; eb.innerHTML = ICON.edit;
+      eb.title = 'Editar'; eb.setAttribute('aria-label', 'Editar ' + it.nombre);
+      eb.addEventListener('click', () => startEdit(it.i));
+      const db = document.createElement('button');
+      db.type = 'button'; db.className = 'icon-btn del'; db.innerHTML = ICON.trash;
+      db.title = 'Eliminar'; db.setAttribute('aria-label', 'Eliminar ' + it.nombre);
+      db.addEventListener('click', () => removeGift(it.i));
+      tools.append(eb, db);
+      el.appendChild(tools);
+    }
 
     const body = document.createElement('div');
     body.className = 'card-body';
@@ -568,7 +913,6 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
       notes.textContent = it.notas;
       body.appendChild(notes);
     }
-
     const foot = document.createElement('div');
     foot.className = 'card-foot';
     const meta = document.createElement('div');
@@ -588,8 +932,7 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
     fillStoreLink(link, it.tienda);
     foot.append(meta, link);
     body.appendChild(foot);
-
-    el.append(imgBtn, body);
+    el.appendChild(body);
     return el;
   }
 
@@ -599,9 +942,10 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
     if (!list.length) {
       const empty = document.createElement('div');
       empty.className = 'empty-state';
-      empty.textContent = items.length
-        ? 'Aún no hay regalos en esta categoría 🎁'
-        : 'Pronto agregaré mis deseos 🎁';
+      const total = data[current].length;
+      empty.textContent = !total
+        ? (current === 'linda' && editing ? 'Tu lista está vacía. Agrega tu primer deseo con el formulario 🎁' : 'Pronto agregaré mis deseos 🎁')
+        : 'Aún no hay regalos en esta categoría 🎁';
       grid.appendChild(empty);
       return;
     }
@@ -614,16 +958,163 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
   function update() {
     clearTimeout(fadeTimer);
     grid.classList.add('fading');
-    fadeTimer = setTimeout(() => {
-      render();
-      requestAnimationFrame(() => grid.classList.remove('fading'));
-    }, 180);
+    fadeTimer = setTimeout(() => { render(); requestAnimationFrame(() => grid.classList.remove('fading')); }, 180);
   }
+  function refresh() { buildPills(); render(); }
+
+  // ---------- Modo edición (Linda) ----------
+  const form = $('gift-form');
+  const fCat = $('f-categoria');
+  function fillCategoryOptions(selected) {
+    const extras = [...new Set(data.linda.map(r => r.categoria).filter(c => c && !CATEGORIAS.includes(c)))];
+    fCat.replaceChildren();
+    [['', 'Sin categoría'], ...[...CATEGORIAS, ...extras].map(c => [c, c])].forEach(([v, t]) => {
+      fCat.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: t }));
+    });
+    fCat.value = selected || '';
+  }
+
+  function setEditing(on) {
+    editing = on;
+    const btn = $('edit-toggle');
+    btn.classList.toggle('on', on);
+    btn.textContent = on ? '✓ Listo' : '✏️ Editar mi lista';
+    btn.setAttribute('aria-pressed', String(on));
+    $('editor').hidden = !on;
+    if (on) { resetForm(); }
+    else { editIndex = null; }
+    render();
+  }
+  $('edit-toggle').addEventListener('click', () => {
+    setEditing(!editing);
+    if (editing) $('editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  function resetForm() {
+    form.reset();
+    editIndex = null;
+    fillCategoryOptions('');
+    $('form-title').textContent = 'Agregar regalo';
+    $('form-submit').lastElementChild.textContent = 'Agregar a mi lista';
+    $('form-cancel').hidden = true;
+  }
+
+  function startEdit(i) {
+    const r = data.linda[i];
+    if (!r) return;
+    editIndex = i;
+    $('f-nombre').value = r.nombre;
+    fillCategoryOptions(r.categoria);
+    $('f-precio').value = r.precio === '' ? '' : r.precio;
+    $('f-tienda').value = r.tienda;
+    $('f-imagen').value = r.imagen;
+    $('f-notas').value = r.notas;
+    $('form-title').textContent = 'Editar regalo';
+    $('form-submit').lastElementChild.textContent = 'Guardar cambios';
+    $('form-cancel').hidden = false;
+    render();
+    $('editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => $('f-nombre').focus({ preventScroll: true }), 350);
+  }
+  $('form-cancel').addEventListener('click', () => { resetForm(); render(); });
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const nombre = $('f-nombre').value.trim();
+    if (!nombre) { $('f-nombre').focus(); toast('Escribe el nombre del regalo'); return; }
+    const tienda = $('f-tienda').value.trim();
+    const imagen = $('f-imagen').value.trim();
+    if (tienda && !safeUrl(tienda)) { $('f-tienda').focus(); toast('La URL de compra debe empezar con http:// o https://'); return; }
+    if (imagen && !safeUrl(imagen)) { $('f-imagen').focus(); toast('La URL de la imagen debe empezar con http:// o https://'); return; }
+    const gift = rawGift({ nombre, categoria: fCat.value, precio: $('f-precio').value, notas: $('f-notas').value, imagen, tienda });
+    const wasEdit = editIndex !== null && data.linda[editIndex];
+    if (wasEdit) data.linda[editIndex] = gift;
+    else data.linda.push(gift);
+    saveDraft();
+    resetForm();
+    refresh();
+    toast(wasEdit ? 'Cambios guardados' : '✨ Regalo agregado');
+    $('f-nombre').focus({ preventScroll: true });
+  });
+
+  let lastDeleted = null;
+  function removeGift(i) {
+    const r = data.linda[i];
+    if (!r) return;
+    lastDeleted = { gift: r, i };
+    data.linda.splice(i, 1);
+    if (editIndex === i) resetForm();
+    else if (editIndex !== null && editIndex > i) editIndex--;
+    saveDraft();
+    refresh();
+    toast('Regalo eliminado', () => {
+      if (!lastDeleted) return;
+      data.linda.splice(Math.min(lastDeleted.i, data.linda.length), 0, lastDeleted.gift);
+      lastDeleted = null;
+      saveDraft();
+      refresh();
+    });
+  }
+
+  // Copiar datos
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch {}
+      ta.remove();
+      return ok;
+    }
+  }
+  $('copy-btn').addEventListener('click', async () => {
+    const ok = await copyText(toCode(data.linda));
+    toast(ok ? 'Copiado: pégalo reemplazando const REGALOS_LINDA = [...] en el código' : 'No se pudo copiar en este navegador');
+  });
+
+  // Descargar index.html actualizado
+  async function getSource() {
+    if (/^https?:$/.test(location.protocol)) {
+      try {
+        const r = await fetch(location.pathname + location.search, { cache: 'no-store' });
+        if (r.ok) { const t = await r.text(); if (t.includes(MARK_START) && t.includes(MARK_END)) return t; }
+      } catch {}
+    }
+    return SNAPSHOT;
+  }
+  $('download-btn').addEventListener('click', async () => {
+    const src = await getSource();
+    const s = src.indexOf(MARK_START);
+    const e = src.indexOf(MARK_END, s);
+    if (s === -1 || e === -1) { toast('No encontré las marcas LINDA en el código'); return; }
+    const html = src.slice(0, s + MARK_START.length) + '\n' + toCode(data.linda) + '\n' + src.slice(e);
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'index.html';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    toast('index.html descargado: súbelo a GitHub para publicarlo');
+  });
+
+  // Restaurar lista publicada
+  $('restore-btn').addEventListener('click', () => {
+    if (!isDirty()) { toast('Ya estás viendo la lista publicada'); return; }
+    if (!confirm('¿Descartar tus cambios locales y volver a la lista publicada?')) return;
+    data.linda = PUBLISHED_LINDA.map(r => ({ ...r }));
+    saveDraft();
+    resetForm();
+    refresh();
+    toast('Lista publicada restaurada');
+  });
 
   // ---------- Modal ----------
   const modal = $('modal');
   let lastFocus = null;
-
   function openModal(it, opener) {
     lastFocus = opener || document.activeElement;
     const mImg = $('modal-img');
@@ -636,8 +1127,7 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
     cat.hidden = !it.categoria;
     const price = $('modal-price');
     price.textContent = it.precio === null ? 'Sin precio' : money.format(it.precio);
-    price.style.color = it.precio === null ? '#a3aaa6' : '';
-    price.style.fontSize = it.precio === null ? '1rem' : '';
+    price.classList.toggle('none', it.precio === null);
     const notes = $('modal-notes');
     notes.textContent = it.notas;
     notes.hidden = !it.notas;
@@ -645,13 +1135,11 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
     const dom = $('modal-domain');
     dom.textContent = it.dominio ? 'en ' + it.dominio : '';
     dom.hidden = !it.dominio;
-
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
     $('modal-close').focus();
   }
-
   function closeModal() {
     if (!modal.classList.contains('open')) return;
     modal.classList.remove('open');
@@ -659,13 +1147,12 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
     document.body.classList.remove('modal-open');
     if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
   }
-
   $('modal-close').addEventListener('click', closeModal);
   modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
   document.addEventListener('keydown', e => {
     if (!modal.classList.contains('open')) return;
     if (e.key === 'Escape') { closeModal(); return; }
-    if (e.key === 'Tab') {   // mantener el foco dentro del modal
+    if (e.key === 'Tab') {
       const f = [...modal.querySelectorAll('button, a[href]')].filter(el => !el.hidden && el.offsetParent !== null);
       if (!f.length) return;
       const first = f[0], last = f[f.length - 1];
@@ -674,23 +1161,43 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
     }
   });
 
+  // ---------- Aviso flotante ----------
+  let toastTimer;
+  function toast(msg, undo) {
+    const t = $('toast'), action = $('toast-action');
+    $('toast-msg').textContent = msg;
+    action.hidden = !undo;
+    action.onclick = undo ? () => { undo(); t.classList.remove('show'); } : null;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.classList.remove('show'); if (undo) lastDeleted = null; }, undo ? 5000 : 2800);
+  }
+
   // ---------- Nieve ----------
   const canvas = $('snow');
   const ctx = canvas.getContext('2d');
-  const toggle = $('snow-toggle');
+  const snowBtn = $('snow-toggle');
   const SNOW_KEY = 'wishlist-nieve';
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const COLORS = ['rgba(200,162,74,', 'rgba(47,93,70,', 'rgba(170,178,174,'];   // dorado, verde, gris suave
-  let flakes = [], snowOn = true, rafId = null, W = 0, H = 0, dpr = 1;
+  const COLORS = ['rgba(200,162,74,', 'rgba(47,93,70,', 'rgba(170,178,174,'];
+  let flakes = [], snowOn = true, rafId = null, W = 0, H = 0;
 
   function readPref() {
     try { const v = localStorage.getItem(SNOW_KEY); return v === null ? !reduceMotion : v === '1'; }
     catch { return !reduceMotion; }
   }
   function writePref(v) { try { localStorage.setItem(SNOW_KEY, v ? '1' : '0'); } catch {} }
-
+  function newFlake(anywhere) {
+    const c = COLORS[Math.random() < .55 ? 0 : Math.random() < .5 ? 2 : 1];
+    return {
+      x: Math.random() * W, y: anywhere ? Math.random() * H : -10,
+      r: 1 + Math.random() * 2.2, vy: .25 + Math.random() * .55,
+      sway: Math.random() * Math.PI * 2, swaySpeed: .004 + Math.random() * .01,
+      color: c + (.18 + Math.random() * .22).toFixed(2) + ')'
+    };
+  }
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     W = window.innerWidth; H = window.innerHeight;
     canvas.width = W * dpr; canvas.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -698,51 +1205,34 @@ const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
     while (flakes.length < target) flakes.push(newFlake(true));
     flakes.length = target;
   }
-  function newFlake(anywhere) {
-    const c = COLORS[Math.random() < .55 ? 0 : Math.random() < .5 ? 2 : 1];
-    return {
-      x: Math.random() * W,
-      y: anywhere ? Math.random() * H : -10,
-      r: 1 + Math.random() * 2.2,
-      vy: .25 + Math.random() * .55,
-      sway: Math.random() * Math.PI * 2,
-      swaySpeed: .004 + Math.random() * .01,
-      color: c + (.18 + Math.random() * .22).toFixed(2) + ')'
-    };
-  }
   function tick() {
     ctx.clearRect(0, 0, W, H);
     for (const f of flakes) {
-      f.sway += f.swaySpeed;
-      f.y += f.vy;
-      f.x += Math.sin(f.sway) * .35;
+      f.sway += f.swaySpeed; f.y += f.vy; f.x += Math.sin(f.sway) * .35;
       if (f.y > H + 10 || f.x < -10 || f.x > W + 10) Object.assign(f, newFlake(false));
-      ctx.beginPath();
-      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-      ctx.fillStyle = f.color;
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fillStyle = f.color; ctx.fill();
     }
     rafId = requestAnimationFrame(tick);
   }
   function start() { if (!rafId && snowOn && !document.hidden) rafId = requestAnimationFrame(tick); }
   function stop() { if (rafId) cancelAnimationFrame(rafId); rafId = null; }
-
   function setSnow(on, save) {
     snowOn = on;
     canvas.classList.toggle('off', !on);
-    toggle.setAttribute('aria-pressed', String(on));
-    toggle.title = on ? 'Desactivar la nieve' : 'Activar la nieve';
+    snowBtn.setAttribute('aria-pressed', String(on));
+    snowBtn.title = on ? 'Desactivar la nieve' : 'Activar la nieve';
     if (save) writePref(on);
     if (on) start(); else setTimeout(() => { if (!snowOn) { stop(); ctx.clearRect(0, 0, W, H); } }, 600);
   }
-
-  toggle.addEventListener('click', () => setSnow(!snowOn, true));
+  snowBtn.addEventListener('click', () => setSnow(!snowOn, true));
   window.addEventListener('resize', resize);
   document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
-
   resize();
   setSnow(readPref(), false);
-  render();
+
+  // ---------- Inicio ----------
+  current = listFromUrl();
+  switchTo(current, { instant: true, silentUrl: true });
 }
 </script>
 </body>
