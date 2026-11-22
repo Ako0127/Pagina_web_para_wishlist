@@ -1,1 +1,287 @@
-<h1>Github pages test</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Wishlist de Navidad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbf9f6;
+    --surface: #ffffff;
+    --ink: #1f2a24;
+    --muted: #6b746f;
+    --line: #ece7e0;
+    --red: #c4524f;
+    --green: #2f5d46;
+    --gold: #c8a24a;
+    --radius: 16px;
+    --shadow: 0 1px 2px rgba(31,42,36,.04), 0 8px 24px rgba(31,42,36,.06);
+    --shadow-hover: 0 2px 4px rgba(31,42,36,.05), 0 14px 32px rgba(31,42,36,.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 10% 0%, rgba(196,82,79,.06), transparent 40%),
+      radial-gradient(circle at 90% 10%, rgba(47,93,70,.06), transparent 40%);
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 20px 64px; }
+
+  header { text-align: center; padding: 56px 0 40px; }
+  .ornament { display: inline-flex; gap: 8px; align-items: center; color: var(--gold); margin-bottom: 12px; }
+  .ornament span { width: 40px; height: 1px; background: currentColor; opacity: .6; }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 700;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    letter-spacing: -.02em;
+    color: var(--green);
+  }
+  h1 em { font-style: normal; color: var(--red); }
+  header p { color: var(--muted); margin-top: 8px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 22px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column;
+    transition: transform .25s, box-shadow .25s;
+    animation: pop .4s ease both;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+  @keyframes pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .card-img { aspect-ratio: 4/3; background: var(--bg); overflow: hidden; }
+  .card-img { background: #fff; }
+  .card-img img { width: 100%; height: 100%; object-fit: contain; padding: 10px; display: block; }
+  .card-body { padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+  .card-title {
+    font-family: "Fraunces", Georgia, serif; font-size: 1.1rem; font-weight: 500;
+    line-height: 1.3; word-break: break-word;
+  }
+  /* El precio y el botón se empujan juntos al fondo de la tarjeta,
+     así todos los precios de una fila quedan a la misma altura */
+  .price {
+    margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--line);
+    color: var(--green); font-weight: 600; font-size: 1.05rem; white-space: nowrap;
+  }
+  .price + .btn-store { margin-top: 0; }
+  .btn-store {
+    margin-top: auto; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    background: var(--green); color: #fff; text-decoration: none; font-weight: 500; font-size: .9rem;
+    padding: 10px 14px; border-radius: 10px; transition: background .2s, transform .15s;
+  }
+  .btn-store:hover { background: #244a37; }
+  .btn-store:active { transform: scale(.97); }
+  .btn-store.disabled { background: var(--line); color: var(--muted); pointer-events: none; }
+
+  .empty-state {
+    grid-column: 1 / -1; text-align: center; padding: 56px 20px; color: var(--muted);
+    border: 1.5px dashed var(--line); border-radius: var(--radius);
+  }
+
+  footer { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 48px; }
+
+  @media (max-width: 520px) {
+    header { padding: 36px 0 28px; }
+    .grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .card-body { padding: 12px; gap: 10px; }
+    .card-title { font-size: .98rem; }
+    .btn-store { font-size: .82rem; padding: 9px 10px; }
+  }
+  @media (max-width: 360px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="ornament"><span></span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2H22l-6 4.6 2.3 7.2L12 16.5 5.7 21l2.3-7.2-6-4.6h7.6z"/></svg>
+    <span></span></div>
+    <!-- Puedes cambiar el título y el subtítulo aquí -->
+    <h1>Mi Wishlist <em></em></h1>
+    <p>Hola, estas son mis opciones jiji</p>
+  </header>
+
+  <main class="grid" id="grid"></main>
+
+  <footer>Feliz Navidad 🎄</footer>
+</div>
+
+<script>
+/* =====================================================================
+   ✏️  EDITA TU LISTA AQUÍ
+   ---------------------------------------------------------------------
+   Cada regalo va entre llaves { } y separado por una coma.
+   - nombre: el nombre del regalo (entre comillas)
+   - precio: solo el número, sin el signo $ (ej. 49.99). Si lo dejas vacío "" no se muestra
+   - imagen: enlace a una foto (si lo dejas vacío "" sale una imagen por defecto)
+   - tienda: enlace a la tienda (si lo dejas vacío "" el botón sale desactivado)
+
+   Para AGREGAR un regalo: copia un bloque { ... }, pégalo y cambia los datos.
+   Para QUITAR un regalo: borra su bloque { ... } completo.
+   ===================================================================== */
+const REGALOS = [
+  {
+    nombre: "PERFUME ARMAF CLUB DE NUIT PRECIUEX EDP (55 ML)",
+    precio: 48.00,
+    imagen: "https://perfumeplanet.com.pa/cdn/shop/files/armaf-extrait-55ml-club-de-nuit-precieux-extrait-de-parfum-for-men-35667620593757.png?v=1792467747&width=1024",
+    tienda: "https://vtpanama.com/products/armaf-club-de-nuit-preciuex-edp-55-ml?_pos=4&_sid=5f8375ca7&_ss=r"
+  },
+  {
+    nombre: "PERFUME ARMAF ODYSSEY MANDARIN SKY EDP (100 ML)",
+    precio: 27.50,
+    imagen: "https://arrocha.com/cdn/shop/files/product-5084837.png?v=1754956251&width=800",
+    tienda: "https://vtpanama.com/products/armaf-mandarin-sky-edp-100-ml?_pos=1&_sid=d6ddb8b31&_ss=r"
+  },
+  {
+    nombre: "PERFUME ARMAF ODYSSEY AQUA EDP (100 ML)",
+    precio: "29.00",
+    imagen: "https://static.wixstatic.com/media/0db592_b6940debf274416a9630cfbbe79cf709~mv2.jpg/v1/fill/w_480,h_480,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/0db592_b6940debf274416a9630cfbbe79cf709~mv2.jpg",
+    tienda: "https://vtpanama.com/products/armaf-odyssey-aqua-edp-100-ml?_pos=7&_psq=Odyssey+Elixir&_psid=fed91291d&_ss=e"
+  },
+  {
+    nombre: "PERFUME AFNAN 9PM NIGHT OUT EDP (100 ML)",
+    precio: "45.00",
+    imagen: "https://vtpanama.com/cdn/shop/files/CopiadeDisenosintitulo_88.jpg?v=1774543317&width=1445",
+    tienda: "https://vtpanama.com/products/afnan-9pm-night-oud-edp-100-ml?_pos=1&_psq=9+pm+night&_psid=a2913c8c2&_ss=e"
+  },
+  {
+    nombre: "PERFUME FRENCH AVENUE LIQUID BRUN EDP (100 ML)",
+    precio: "35.00",
+    imagen: "https://static.wixstatic.com/media/53325f_c58d1ca138254dd58159cb62e1b9b6d9~mv2.jpg/v1/fit/w_500,h_500,q_90/file.jpg",
+    tienda: "https://vtpanama.com/products/french-avenue-liquid-brun-edp-100-ml?_pos=1&_sid=065a9ff23&_ss=r"
+  },
+  {
+    nombre: "PERFUME DECANT LATTAFA ART OF UNIVERSE EDP",
+    precio: "48.00",
+    imagen: "https://perfumeriaclass.com/cdn/shop/files/Listado24-11-2026-06-01T112240.321_1200x1200.jpg?v=1780334567",
+    tienda: "https://www.perfumeriamiracle.com/product-page/lattafa-art-of-universe-edp-100ml?srsltid=AYCX9vLKKswIQYbVt_mwM_PpgQpTnjuyJHMjaP_Y5jNbwq26piG6YGUq"
+  },
+  {
+    nombre: "PERFUME RAYHAAN ITALIA EDP FOR MEN",
+    precio: "40.00",
+    imagen: "https://m.media-amazon.com/images/I/71n2aRqFoQL.jpg",
+    tienda: "https://wafadutyfree.com/es/products/rayhaan-italia-edp-for-men?srsltid=AYCX9vL9i-ZttFVrehc7QWLGAgz0aohbFNK2Av1BqZ2F3aiW2SwsBDRj"
+  },
+  {
+    nombre: "SOPORTE PARA LAPTOP",
+    precio: "",
+    imagen: "",
+    tienda: ""
+  },
+  {
+    nombre: "Taza navideña",
+    precio: "",
+    imagen: "",
+    tienda: ""
+  },
+];
+/* ===================== No hace falta editar debajo de esta línea ===================== */
+
+(() => {
+  // Imagen por defecto (dibujo de un regalo, no necesita internet)
+  const FALLBACK_IMG = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+      <rect width="400" height="300" fill="#f4efe8"/>
+      <g transform="translate(200 160)">
+        <rect x="-62" y="-30" width="124" height="88" rx="6" fill="#c4524f"/>
+        <rect x="-72" y="-52" width="144" height="28" rx="6" fill="#d76663"/>
+        <rect x="-11" y="-52" width="22" height="110" fill="#c8a24a"/>
+        <path d="M0 -52 C -30 -95, -70 -70, -38 -54 Z" fill="#c8a24a"/>
+        <path d="M0 -52 C 30 -95, 70 -70, 38 -54 Z" fill="#c8a24a"/>
+        <circle cx="0" cy="-54" r="9" fill="#b08a35"/>
+      </g>
+      <g fill="#2f5d46" opacity=".25">
+        <circle cx="60" cy="60" r="4"/><circle cx="340" cy="70" r="5"/>
+        <circle cx="70" cy="240" r="5"/><circle cx="330" cy="235" r="4"/>
+      </g>
+    </svg>`);
+
+  const EXT_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+
+  function safeUrl(value) {
+    if (!value) return '';
+    try {
+      const u = new URL(String(value).trim());
+      return (u.protocol === 'http:' || u.protocol === 'https:') ? u.href : '';
+    } catch { return ''; }
+  }
+  // Las imágenes también aceptan rutas de archivos junto a la página (ej. "img/perfume.jpg")
+  function safeImg(value) {
+    if (!value) return '';
+    try {
+      const u = new URL(String(value).trim(), location.href);
+      return /^(https?|file):$/.test(u.protocol) ? u.href : '';
+    } catch { return ''; }
+  }
+
+  const money = new Intl.NumberFormat('es-PA', { style: 'currency', currency: 'USD', currencyDisplay: 'narrowSymbol' });
+  const grid = document.getElementById('grid');
+  const lista = (Array.isArray(REGALOS) ? REGALOS : []).filter(r => r && String(r.nombre || '').trim());
+
+  if (!lista.length) {
+    grid.innerHTML = '<div class="empty-state">Pronto agregaré mis deseos 🎁</div>';
+    return;
+  }
+
+  lista.forEach((r, i) => {
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.style.animationDelay = (i * 60) + 'ms';
+
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'card-img';
+    const img = document.createElement('img');
+    img.alt = r.nombre;
+    img.loading = 'lazy';
+    img.referrerPolicy = 'no-referrer';
+    img.src = safeImg(r.imagen) || FALLBACK_IMG;
+    img.addEventListener('error', () => { if (img.src !== FALLBACK_IMG) img.src = FALLBACK_IMG; });
+    imgWrap.appendChild(img);
+
+    const body = document.createElement('div');
+    body.className = 'card-body';
+    const title = document.createElement('h2');
+    title.className = 'card-title';
+    title.textContent = r.nombre;
+
+    const link = document.createElement('a');
+    const url = safeUrl(r.tienda);
+    link.className = 'btn-store' + (url ? '' : ' disabled');
+    link.innerHTML = EXT_ICON + '<span></span>';
+    link.querySelector('span').textContent = url ? 'Ir a la tienda' : 'Sin enlace';
+    if (url) {
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+    } else {
+      link.setAttribute('aria-disabled', 'true');
+    }
+
+    body.append(title);
+
+    // Precio (acepta 49.99, "49.99", "$49.99" o "49,99")
+    const precioTxt = String(r.precio ?? '').replace(/[^\d.,]/g, '').replace(',', '.');
+    const precio = precioTxt === '' ? NaN : Number(precioTxt);
+    if (Number.isFinite(precio) && precio > 0) {
+      const price = document.createElement('div');
+      price.className = 'price';
+      price.textContent = money.format(precio);
+      body.append(price);
+    }
+
+    body.append(link);
+    card.append(imgWrap, body);
+    grid.appendChild(card);
+  });
+})();
+</script>
+</body>
+</html>
