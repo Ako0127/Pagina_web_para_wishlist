@@ -480,8 +480,8 @@
    ---------------------------------------------------------------------
    Cada regalo va entre llaves { } y separado por una coma.
    - nombre:    el nombre del regalo (entre comillas)
-   - categoria: "Perfumes", "Electrónicos", "Maquillaje" o "Accesorios"
-                (puedes inventar otra y aparecerá sola como filtro; vacío "" = sin categoría)
+   - categoria: una de las categorías de esa lista (ver LISTAS más abajo).
+                Si la dejas vacía "" o escribes una que no existe, el regalo va a "Otros".
    - precio:    solo el número, sin el signo $ (ej. 49.99). Vacío "" = no se muestra
    - notas:     detalles como talla, tono o tamaño (vacío "" = no se muestra)
    - imagen:    enlace a una foto (vacío "" = imagen por defecto)
@@ -491,14 +491,20 @@
                       (también funciona ?lista=linda)
    ===================================================================== */
 
-// Título y subtítulo de cada lista
+// Título, subtítulo y categorías de cada lista ("Todos" se agrega solo al inicio).
+// Deja "Otros" al final: ahí van los regalos sin categoría o con una que no esté aquí.
 const LISTAS = {
-  ian:   { nombre: "Ian",   subtitulo: "Hola, estas son mis opciones jiji" },
-  linda: { nombre: "Linda", subtitulo: "Mis ideas favoritas para esta Navidad" },
+  ian: {
+    nombre: "Ian",
+    subtitulo: "Hola, estas son mis opciones jiji",
+    categorias: ["Perfumes", "Electrónicos", "Joyería", "Ropa", "Zapatos", "Otros"]
+  },
+  linda: {
+    nombre: "Linda",
+    subtitulo: "Mis ideas favoritas para esta Navidad",
+    categorias: ["Maquillaje", "Ropa", "Joyería", "Perfumes", "Electrónicos", "Medicina", "Peluches", "Otros"]
+  },
 };
-
-// Píldoras que siempre se muestran (en este orden). Si usas otra categoría, se agrega sola al final.
-const CATEGORIAS = ["Perfumes", "Electrónicos", "Maquillaje", "Accesorios"];
 
 // ---------------------------- Lista de Ian ----------------------------
 const REGALOS_IAN = [
@@ -560,7 +566,7 @@ const REGALOS_IAN = [
   },
   {
     nombre: "SOPORTE PARA LAPTOP",
-    categoria: "Accesorios",
+    categoria: "Otros",
     precio: "",
     notas: "",
     imagen: "",
@@ -568,7 +574,7 @@ const REGALOS_IAN = [
   },
   {
     nombre: "Taza navideña",
-    categoria: "",
+    categoria: "Otros",
     precio: "",
     notas: "",
     imagen: "",
@@ -599,7 +605,7 @@ const REGALOS_LINDA = [
   },
   {
     nombre: "Bolso pequeño (ejemplo)",
-    categoria: "Accesorios",
+    categoria: "Otros",
     precio: "",
     notas: "",
     imagen: "",
@@ -668,22 +674,32 @@ const REGALOS_LINDA = [
   }
   const clean = v => String(v ?? '').trim();
   const keyOf = s => s.toLocaleLowerCase('es').normalize('NFD').replace(/[̀-ͯ]/g, '');
-  const catLabel = c => CATEGORIAS.find(x => keyOf(x) === keyOf(c)) || c;
+  const FALLBACK_CAT = 'Otros';
+  const catsOf = id => {
+    const list = (LISTAS[id] && Array.isArray(LISTAS[id].categorias) ? LISTAS[id].categorias : [])
+      .map(clean).filter(Boolean);
+    return list.includes(FALLBACK_CAT) ? list : [...list, FALLBACK_CAT];
+  };
+  // Devuelve la categoría oficial de esa lista (ignora mayúsculas y tildes) o "Otros"
+  const catFor = (c, id) => {
+    const k = keyOf(clean(c));
+    return (k && catsOf(id).find(x => keyOf(x) === k)) || FALLBACK_CAT;
+  };
 
   // Regalo "crudo" con los 6 campos, limpio (lo que se guarda y se exporta)
-  function rawGift(r) {
+  function rawGift(r, id) {
     r = r || {};
     const p = parsePrice(r.precio);
     return {
       nombre: clean(r.nombre).slice(0, 140),
-      categoria: r.categoria ? catLabel(clean(r.categoria)) : '',
+      categoria: catFor(r.categoria, id),
       precio: p === null ? '' : Math.round(p * 100) / 100,
       notas: clean(r.notas).slice(0, 500),
       imagen: clean(r.imagen),
       tienda: clean(r.tienda)
     };
   }
-  const rawList = arr => (Array.isArray(arr) ? arr : []).map(rawGift).filter(r => r.nombre);
+  const rawList = (arr, id) => (Array.isArray(arr) ? arr : []).map(r => rawGift(r, id)).filter(r => r.nombre);
 
   // Regalo listo para mostrar (sin duplicados); "i" es su posición en la lista original
   function viewItems(list) {
@@ -706,9 +722,9 @@ const REGALOS_LINDA = [
   }
 
   // ---------- Datos ----------
-  const PUBLISHED_LINDA = rawList(typeof REGALOS_LINDA !== 'undefined' ? REGALOS_LINDA : []);
+  const PUBLISHED_LINDA = rawList(typeof REGALOS_LINDA !== 'undefined' ? REGALOS_LINDA : [], 'linda');
   const data = {
-    ian: rawList(typeof REGALOS_IAN !== 'undefined' ? REGALOS_IAN : []),
+    ian: rawList(typeof REGALOS_IAN !== 'undefined' ? REGALOS_IAN : [], 'ian'),
     linda: PUBLISHED_LINDA.map(r => ({ ...r }))
   };
   const state = { ian: { cat: 'Todos', order: 'default' }, linda: { cat: 'Todos', order: 'default' } };
@@ -731,7 +747,8 @@ const REGALOS_LINDA = [
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
-      const list = rawList(JSON.parse(raw));
+      const list = rawList(JSON.parse(raw), 'linda');   // normaliza categorías antiguas
+      if (JSON.stringify(list) !== raw) localStorage.setItem(DRAFT_KEY, JSON.stringify(list));
       if (toCode(list) === publishedCode) { localStorage.removeItem(DRAFT_KEY); return; } // ya está publicado
       data.linda = list;
     } catch {}
@@ -794,9 +811,8 @@ const REGALOS_LINDA = [
   const pills = $('pills');
   function buildPills() {
     const items = viewItems(data[current]);
-    const extras = [...new Set(items.map(it => it.categoria).filter(c => c && !CATEGORIAS.includes(c)))];
-    const cats = ['Todos', ...CATEGORIAS, ...extras];
-    if (!cats.includes(state[current].cat)) state[current].cat = 'Todos';
+    const cats = ['Todos', ...catsOf(current)];
+    if (!cats.includes(state[current].cat)) state[current].cat = 'Todos';   // evita vistas vacías por error
     pills.replaceChildren();
     cats.forEach(cat => {
       const n = cat === 'Todos' ? items.length : items.filter(it => it.categoria === cat).length;
@@ -966,12 +982,12 @@ const REGALOS_LINDA = [
   const form = $('gift-form');
   const fCat = $('f-categoria');
   function fillCategoryOptions(selected) {
-    const extras = [...new Set(data.linda.map(r => r.categoria).filter(c => c && !CATEGORIAS.includes(c)))];
+    const cats = catsOf('linda');
     fCat.replaceChildren();
-    [['', 'Sin categoría'], ...[...CATEGORIAS, ...extras].map(c => [c, c])].forEach(([v, t]) => {
-      fCat.appendChild(Object.assign(document.createElement('option'), { value: v, textContent: t }));
-    });
-    fCat.value = selected || '';
+    cats.forEach(c => fCat.appendChild(Object.assign(document.createElement('option'), { value: c, textContent: c })));
+    // Por defecto: la categoría que Linda está viendo (si no es "Todos"); si no, "Otros"
+    const viewing = state.linda.cat !== 'Todos' ? state.linda.cat : FALLBACK_CAT;
+    fCat.value = selected ? catFor(selected, 'linda') : viewing;
   }
 
   function setEditing(on) {
@@ -1026,10 +1042,12 @@ const REGALOS_LINDA = [
     const imagen = $('f-imagen').value.trim();
     if (tienda && !safeUrl(tienda)) { $('f-tienda').focus(); toast('La URL de compra debe empezar con http:// o https://'); return; }
     if (imagen && !safeUrl(imagen)) { $('f-imagen').focus(); toast('La URL de la imagen debe empezar con http:// o https://'); return; }
-    const gift = rawGift({ nombre, categoria: fCat.value, precio: $('f-precio').value, notas: $('f-notas').value, imagen, tienda });
+    const gift = rawGift({ nombre, categoria: fCat.value, precio: $('f-precio').value, notas: $('f-notas').value, imagen, tienda }, 'linda');
     const wasEdit = editIndex !== null && data.linda[editIndex];
     if (wasEdit) data.linda[editIndex] = gift;
     else data.linda.push(gift);
+    // Si el regalo no es de la categoría que se está viendo, vuelve a "Todos" para que no quede oculto
+    if (state.linda.cat !== 'Todos' && gift.categoria !== state.linda.cat) state.linda.cat = 'Todos';
     saveDraft();
     resetForm();
     refresh();
@@ -1043,6 +1061,8 @@ const REGALOS_LINDA = [
     if (!r) return;
     lastDeleted = { gift: r, i };
     data.linda.splice(i, 1);
+    // Si la categoría que se está viendo quedó vacía, vuelve a "Todos"
+    if (state.linda.cat !== 'Todos' && !data.linda.some(g => g.categoria === state.linda.cat)) state.linda.cat = 'Todos';
     if (editIndex === i) resetForm();
     else if (editIndex !== null && editIndex > i) editIndex--;
     saveDraft();
