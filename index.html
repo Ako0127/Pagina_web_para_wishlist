@@ -145,7 +145,7 @@
   }
   .draft-note svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
 
-  /* ---------- Editor de Linda ---------- */
+  /* ---------- Editor de Dudu ---------- */
   .editor {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
     box-shadow: var(--shadow); padding: 22px; margin-bottom: 26px;
@@ -349,8 +349,8 @@
     <span></span></div>
     <div>
       <div class="tabs" role="tablist" aria-label="Elegir lista">
-        <button type="button" class="tab" role="tab" id="tab-ian" data-lista="ian" aria-controls="grid">Wishlist de <b>Ian</b></button>
-        <button type="button" class="tab" role="tab" id="tab-linda" data-lista="linda" aria-controls="grid">Wishlist de <b>Linda</b></button>
+        <button type="button" class="tab" role="tab" id="tab-Bubu" data-lista="Bubu" aria-controls="grid">Wishlist de <b>Bubu</b></button>
+        <button type="button" class="tab" role="tab" id="tab-Dudu" data-lista="Dudu" aria-controls="grid">Wishlist de <b>Dudu</b></button>
       </div>
     </div>
     <div class="swap" id="heading">
@@ -378,8 +378,8 @@
     <span>Estás viendo cambios guardados <b>solo en este navegador</b>. Para que todos los vean, usa “Descargar index.html actualizado” y reemplaza el archivo en GitHub.</span>
   </div>
 
-  <!-- Editor (solo para la lista de Linda) -->
-  <section class="editor" id="editor" hidden aria-label="Editar lista de Linda">
+  <!-- Editor (solo para la lista de Dudu) -->
+  <section class="editor" id="editor" hidden aria-label="Editar lista de Dudu">
     <div class="editor-head">
       <h2 id="form-title">Agregar regalo</h2>
       <p>Los cambios se guardan solos en este navegador.</p>
@@ -487,27 +487,27 @@
    - imagen:    enlace a una foto (vacío "" = imagen por defecto)
    - tienda:    enlace a la tienda (vacío "" = botón desactivado)
 
-   Enlaces directos:  tusitio.github.io/repo/#ian   o   tusitio.github.io/repo/#linda
-                      (también funciona ?lista=linda)
+   Enlaces directos:  tusitio.github.io/repo/#Bubu   o   tusitio.github.io/repo/#Dudu
+                      (también funciona ?lista=Dudu)
    ===================================================================== */
 
 // Título, subtítulo y categorías de cada lista ("Todos" se agrega solo al inicio).
 // Deja "Otros" al final: ahí van los regalos sin categoría o con una que no esté aquí.
 const LISTAS = {
-  ian: {
-    nombre: "Ian",
+  Bubu: {
+    nombre: "Bubu",
     subtitulo: "Hola, estas son mis opciones jiji",
     categorias: ["Perfumes", "Electrónicos", "Joyería", "Ropa", "Zapatos", "Otros"]
   },
-  linda: {
-    nombre: "Linda",
+  Dudu: {
+    nombre: "Dudu",
     subtitulo: "Mis ideas favoritas para esta Navidad",
     categorias: ["Maquillaje", "Ropa", "Joyería", "Perfumes", "Electrónicos", "Medicina", "Peluches", "Accesorios", "Otros"]
   },
 };
 
-// ---------------------------- Lista de Ian ----------------------------
-const REGALOS_IAN = [
+// ---------------------------- Lista de Bubu ----------------------------
+const REGALOS_Bubu = [
   {
     nombre: "PERFUME ARMAF CLUB DE NUIT PRECIUEX EDP (55 ML)",
     categoria: "Perfumes",
@@ -582,11 +582,11 @@ const REGALOS_IAN = [
   },
 ];
 
-// --------------------------- Lista de Linda ---------------------------
-// Linda puede editar esta lista desde la página con "✏️ Editar mi lista".
-// No borres las dos marcas LINDA:INICIO y LINDA:FIN: la página las usa para guardar.
-/*LINDA:INICIO*/
-const REGALOS_LINDA = [
+// --------------------------- Lista de Dudu ---------------------------
+// Dudu puede editar esta lista desde la página con "✏️ Editar mi lista".
+// No borres las dos marcas Dudu:INICIO y Dudu:FIN: la página las usa para guardar.
+/*Dudu:INICIO*/
+const REGALOS_Dudu = [
   {
     nombre: "Paleta de sombras (ejemplo)",
     categoria: "Maquillaje",
@@ -612,7 +612,7 @@ const REGALOS_LINDA = [
     tienda: ""
   },
 ];
-/*LINDA:FIN*/
+/*Dudu:FIN*/
 </script>
 
 <script>
@@ -620,9 +620,9 @@ const REGALOS_LINDA = [
 {
   // Copia del código fuente tal como cargó (se usa al descargar el index.html actualizado)
   const SNAPSHOT = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-  const MARK_START = '/*LINDA' + ':INICIO*/';
-  const MARK_END = '/*LINDA' + ':FIN*/';
-  const DRAFT_KEY = 'wishlist-linda-borrador';
+  const MARK_START = '/*Dudu' + ':INICIO*/';
+  const MARK_END = '/*Dudu' + ':FIN*/';
+  const DRAFT_KEY = 'wishlist-Dudu-borrador';
   const FIELDS = ['nombre', 'categoria', 'precio', 'notas', 'imagen', 'tienda'];
 
   const FALLBACK_IMG = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`
@@ -722,46 +722,46 @@ const REGALOS_LINDA = [
   }
 
   // ---------- Datos ----------
-  const PUBLISHED_LINDA = rawList(typeof REGALOS_LINDA !== 'undefined' ? REGALOS_LINDA : [], 'linda');
+  const PUBLISHED_Dudu = rawList(typeof REGALOS_Dudu !== 'undefined' ? REGALOS_Dudu : [], 'Dudu');
   const data = {
-    ian: rawList(typeof REGALOS_IAN !== 'undefined' ? REGALOS_IAN : [], 'ian'),
-    linda: PUBLISHED_LINDA.map(r => ({ ...r }))
+    Bubu: rawList(typeof REGALOS_Bubu !== 'undefined' ? REGALOS_Bubu : [], 'Bubu'),
+    Dudu: PUBLISHED_Dudu.map(r => ({ ...r }))
   };
-  const state = { ian: { cat: 'Todos', order: 'default' }, linda: { cat: 'Todos', order: 'default' } };
-  let current = 'ian';
+  const state = { Bubu: { cat: 'Todos', order: 'default' }, Dudu: { cat: 'Todos', order: 'default' } };
+  let current = 'Bubu';
   let editing = false;
   let editIndex = null;
 
-  // Borrador local de Linda
+  // Borrador local de Dudu
   function toCode(list) {
     const q = v => JSON.stringify(String(v)).replace(/</g, '\\u003c');
     const body = list.map(r => '  {\n' + FIELDS.map(k =>
       '    ' + k + ': ' + (k === 'precio' ? (r.precio === '' ? '""' : String(r.precio)) : q(r[k]))
     ).join(',\n') + '\n  },').join('\n');
-    return 'const REGALOS_LINDA = [\n' + body + (list.length ? '\n' : '') + '];';
+    return 'const REGALOS_Dudu = [\n' + body + (list.length ? '\n' : '') + '];';
   }
-  const publishedCode = toCode(PUBLISHED_LINDA);
-  const isDirty = () => toCode(data.linda) !== publishedCode;
+  const publishedCode = toCode(PUBLISHED_Dudu);
+  const isDirty = () => toCode(data.Dudu) !== publishedCode;
 
   function loadDraft() {
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
-      const list = rawList(JSON.parse(raw), 'linda');   // normaliza categorías antiguas
+      const list = rawList(JSON.parse(raw), 'Dudu');   // normaliza categorías antiguas
       if (JSON.stringify(list) !== raw) localStorage.setItem(DRAFT_KEY, JSON.stringify(list));
       if (toCode(list) === publishedCode) { localStorage.removeItem(DRAFT_KEY); return; } // ya está publicado
-      data.linda = list;
+      data.Dudu = list;
     } catch {}
   }
   function saveDraft() {
     try {
-      if (isDirty()) localStorage.setItem(DRAFT_KEY, JSON.stringify(data.linda));
+      if (isDirty()) localStorage.setItem(DRAFT_KEY, JSON.stringify(data.Dudu));
       else localStorage.removeItem(DRAFT_KEY);
     } catch { toast('No se pudo guardar en este navegador'); }
     updateDraftNote();
   }
   function updateDraftNote() {
-    $('draft-note').hidden = !(current === 'linda' && isDirty());
+    $('draft-note').hidden = !(current === 'Dudu' && isDirty());
   }
   loadDraft();
 
@@ -778,21 +778,21 @@ const REGALOS_LINDA = [
 
   function listFromUrl() {
     const h = location.hash.replace('#', '').toLowerCase();
-    if (h === 'ian' || h === 'linda') return h;
+    if (h === 'Bubu' || h === 'Dudu') return h;
     const q = new URLSearchParams(location.search).get('lista');
-    if (q && (q.toLowerCase() === 'ian' || q.toLowerCase() === 'linda')) return q.toLowerCase();
-    return 'ian';
+    if (q && (q.toLowerCase() === 'Bubu' || q.toLowerCase() === 'Dudu')) return q.toLowerCase();
+    return 'Bubu';
   }
 
   function switchTo(id, opts = {}) {
-    if (!data[id]) id = 'ian';
+    if (!data[id]) id = 'Bubu';
     const changed = id !== current;
     current = id;
-    if (id !== 'linda' && editing) setEditing(false);
+    if (id !== 'Dudu' && editing) setEditing(false);
     if (!opts.silentUrl) {
       try { history.replaceState(null, '', location.pathname + '#' + id); } catch { location.hash = id; }
     }
-    $('edit-toggle').hidden = id !== 'linda';
+    $('edit-toggle').hidden = id !== 'Dudu';
     $('sort').value = state[id].order;
     updateDraftNote();
     if (changed && !opts.instant) {
@@ -878,7 +878,7 @@ const REGALOS_LINDA = [
 
   function card(it, idx) {
     const el = document.createElement('article');
-    el.className = 'card' + (editing && current === 'linda' && editIndex === it.i ? ' editing-this' : '');
+    el.className = 'card' + (editing && current === 'Dudu' && editIndex === it.i ? ' editing-this' : '');
     el.style.animationDelay = Math.min(idx * 50, 400) + 'ms';
 
     const imgBtn = document.createElement('button');
@@ -901,7 +901,7 @@ const REGALOS_LINDA = [
     imgBtn.addEventListener('click', () => openModal(it, imgBtn));
     el.appendChild(imgBtn);
 
-    if (editing && current === 'linda') {
+    if (editing && current === 'Dudu') {
       el.classList.add('tools-on');
       const tools = document.createElement('div');
       tools.className = 'card-tools';
@@ -960,7 +960,7 @@ const REGALOS_LINDA = [
       empty.className = 'empty-state';
       const total = data[current].length;
       empty.textContent = !total
-        ? (current === 'linda' && editing ? 'Tu lista está vacía. Agrega tu primer deseo con el formulario 🎁' : 'Pronto agregaré mis deseos 🎁')
+        ? (current === 'Dudu' && editing ? 'Tu lista está vacía. Agrega tu primer deseo con el formulario 🎁' : 'Pronto agregaré mis deseos 🎁')
         : 'Aún no hay regalos en esta categoría 🎁';
       grid.appendChild(empty);
       return;
@@ -978,16 +978,16 @@ const REGALOS_LINDA = [
   }
   function refresh() { buildPills(); render(); }
 
-  // ---------- Modo edición (Linda) ----------
+  // ---------- Modo edición (Dudu) ----------
   const form = $('gift-form');
   const fCat = $('f-categoria');
   function fillCategoryOptions(selected) {
-    const cats = catsOf('linda');
+    const cats = catsOf('Dudu');
     fCat.replaceChildren();
     cats.forEach(c => fCat.appendChild(Object.assign(document.createElement('option'), { value: c, textContent: c })));
-    // Por defecto: la categoría que Linda está viendo (si no es "Todos"); si no, "Otros"
-    const viewing = state.linda.cat !== 'Todos' ? state.linda.cat : FALLBACK_CAT;
-    fCat.value = selected ? catFor(selected, 'linda') : viewing;
+    // Por defecto: la categoría que Dudu está viendo (si no es "Todos"); si no, "Otros"
+    const viewing = state.Dudu.cat !== 'Todos' ? state.Dudu.cat : FALLBACK_CAT;
+    fCat.value = selected ? catFor(selected, 'Dudu') : viewing;
   }
 
   function setEditing(on) {
@@ -1016,7 +1016,7 @@ const REGALOS_LINDA = [
   }
 
   function startEdit(i) {
-    const r = data.linda[i];
+    const r = data.Dudu[i];
     if (!r) return;
     editIndex = i;
     $('f-nombre').value = r.nombre;
@@ -1042,12 +1042,12 @@ const REGALOS_LINDA = [
     const imagen = $('f-imagen').value.trim();
     if (tienda && !safeUrl(tienda)) { $('f-tienda').focus(); toast('La URL de compra debe empezar con http:// o https://'); return; }
     if (imagen && !safeUrl(imagen)) { $('f-imagen').focus(); toast('La URL de la imagen debe empezar con http:// o https://'); return; }
-    const gift = rawGift({ nombre, categoria: fCat.value, precio: $('f-precio').value, notas: $('f-notas').value, imagen, tienda }, 'linda');
-    const wasEdit = editIndex !== null && data.linda[editIndex];
-    if (wasEdit) data.linda[editIndex] = gift;
-    else data.linda.push(gift);
+    const gift = rawGift({ nombre, categoria: fCat.value, precio: $('f-precio').value, notas: $('f-notas').value, imagen, tienda }, 'Dudu');
+    const wasEdit = editIndex !== null && data.Dudu[editIndex];
+    if (wasEdit) data.Dudu[editIndex] = gift;
+    else data.Dudu.push(gift);
     // Si el regalo no es de la categoría que se está viendo, vuelve a "Todos" para que no quede oculto
-    if (state.linda.cat !== 'Todos' && gift.categoria !== state.linda.cat) state.linda.cat = 'Todos';
+    if (state.Dudu.cat !== 'Todos' && gift.categoria !== state.Dudu.cat) state.Dudu.cat = 'Todos';
     saveDraft();
     resetForm();
     refresh();
@@ -1057,19 +1057,19 @@ const REGALOS_LINDA = [
 
   let lastDeleted = null;
   function removeGift(i) {
-    const r = data.linda[i];
+    const r = data.Dudu[i];
     if (!r) return;
     lastDeleted = { gift: r, i };
-    data.linda.splice(i, 1);
+    data.Dudu.splice(i, 1);
     // Si la categoría que se está viendo quedó vacía, vuelve a "Todos"
-    if (state.linda.cat !== 'Todos' && !data.linda.some(g => g.categoria === state.linda.cat)) state.linda.cat = 'Todos';
+    if (state.Dudu.cat !== 'Todos' && !data.Dudu.some(g => g.categoria === state.Dudu.cat)) state.Dudu.cat = 'Todos';
     if (editIndex === i) resetForm();
     else if (editIndex !== null && editIndex > i) editIndex--;
     saveDraft();
     refresh();
     toast('Regalo eliminado', () => {
       if (!lastDeleted) return;
-      data.linda.splice(Math.min(lastDeleted.i, data.linda.length), 0, lastDeleted.gift);
+      data.Dudu.splice(Math.min(lastDeleted.i, data.Dudu.length), 0, lastDeleted.gift);
       lastDeleted = null;
       saveDraft();
       refresh();
@@ -1090,8 +1090,8 @@ const REGALOS_LINDA = [
     }
   }
   $('copy-btn').addEventListener('click', async () => {
-    const ok = await copyText(toCode(data.linda));
-    toast(ok ? 'Copiado: pégalo reemplazando const REGALOS_LINDA = [...] en el código' : 'No se pudo copiar en este navegador');
+    const ok = await copyText(toCode(data.Dudu));
+    toast(ok ? 'Copiado: pégalo reemplazando const REGALOS_Dudu = [...] en el código' : 'No se pudo copiar en este navegador');
   });
 
   // Descargar index.html actualizado
@@ -1108,8 +1108,8 @@ const REGALOS_LINDA = [
     const src = await getSource();
     const s = src.indexOf(MARK_START);
     const e = src.indexOf(MARK_END, s);
-    if (s === -1 || e === -1) { toast('No encontré las marcas LINDA en el código'); return; }
-    const html = src.slice(0, s + MARK_START.length) + '\n' + toCode(data.linda) + '\n' + src.slice(e);
+    if (s === -1 || e === -1) { toast('No encontré las marcas Dudu en el código'); return; }
+    const html = src.slice(0, s + MARK_START.length) + '\n' + toCode(data.Dudu) + '\n' + src.slice(e);
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -1125,7 +1125,7 @@ const REGALOS_LINDA = [
   $('restore-btn').addEventListener('click', () => {
     if (!isDirty()) { toast('Ya estás viendo la lista publicada'); return; }
     if (!confirm('¿Descartar tus cambios locales y volver a la lista publicada?')) return;
-    data.linda = PUBLISHED_LINDA.map(r => ({ ...r }));
+    data.Dudu = PUBLISHED_Dudu.map(r => ({ ...r }));
     saveDraft();
     resetForm();
     refresh();
