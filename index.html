@@ -373,6 +373,8 @@
   .pin-field.solo > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .pin-help { font-size: .84rem; color: var(--muted); text-align: left; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; line-height: 1.5; }
   .pin-help code { background: var(--gold-soft); color: #6e5718; padding: 1px 5px; border-radius: 6px; font-size: .78rem; overflow-wrap: anywhere; }
+  .pin-loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px 0 8px; color: var(--muted); font-size: .9rem; }
+  .spin.dark { border-color: var(--gold-soft); border-top-color: var(--gold); width: 18px; height: 18px; }
   .pin-link { margin-top: 14px; background: none; border: 0; color: var(--muted); font-size: .84rem; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 4px; }
   .pin-link:hover { color: #8a6d24; }
   .pin-actions { display: flex; gap: 8px; margin-top: 10px; }
@@ -499,6 +501,7 @@
     <div class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
     <h2 id="pin-title">Editar lista</h2>
     <p id="pin-desc"></p>
+    <div class="pin-loading" id="pin-loading" hidden><span class="spin dark"></span>Comprobando si esta lista ya tiene PIN…</div>
     <div id="pin-fields">
       <label class="pin-field" id="pf-1"><span id="pl-1">PIN</span><input type="password" id="pin-1" maxlength="64" placeholder="••••"></label>
       <label class="pin-field" id="pf-2"><span id="pl-2">PIN nuevo</span><input type="password" id="pin-2" maxlength="64" placeholder="••••"></label>
@@ -970,10 +973,10 @@ const LISTAS = {
       link: ['¿Olvidaste tu PIN?', 'reset']
     }),
     create: n => ({
-      title: 'Crea el PIN de ' + n,
-      desc: 'Es la primera vez que se edita esta lista. Elige un PIN de al menos 4 caracteres: se pedirá cada vez que alguien quiera editarla.',
-      fields: [['PIN nuevo', 'new-password'], ['Confirmar PIN', 'new-password']],
-      submit: 'Crear PIN'
+      title: 'Crea tu PIN',
+      desc: 'La lista de ' + n + ' todavía no tiene PIN. Elige uno de al menos 4 caracteres: se pedirá cada vez que alguien quiera editarla.',
+      fields: [['Nuevo PIN', 'new-password'], ['Confirmar PIN', 'new-password']],
+      submit: 'Guardar PIN y editar'
     }),
     change: n => ({
       title: 'Cambiar PIN de ' + n,
@@ -996,6 +999,7 @@ const LISTAS = {
     const cfg = MODES[mode](n);
     if (mode !== 'reset') pin.back = mode;
     pin.mode = mode;
+    $('pin-loading').hidden = true;
     $('pin-title').textContent = cfg.title;
     $('pin-desc').textContent = cfg.desc;
     pinIn.forEach((inp, k) => {
@@ -1038,25 +1042,48 @@ const LISTAS = {
     return { configurado: !!(data && data.configurado), maestra: !!(data && data.clave_maestra) };
   }
 
-  // Abre el modal en el modo correcto: crear (si la lista no tiene PIN) o entrar
+  // Abre el modal al instante con "Comprobando…" y luego elige el modo:
+  // crear (si esa lista aún no tiene PIN en Supabase) o entrar con el PIN existente
+  let accessSeq = 0;
+  function pinLoadingState(owner) {
+    $('pin-title').textContent = 'Editar lista de ' + LISTAS[owner].nombre;
+    $('pin-desc').textContent = '';
+    $('pin-loading').hidden = false;
+    $('pin-fields').hidden = true;
+    $('pin-help').hidden = true;
+    $('pin-submit').hidden = true;
+    $('pin-link').hidden = true;
+    $('pin-cancel').textContent = 'Cancelar';
+    pinError('');
+  }
   async function openAccess(owner, mode) {
-    const btn = $('edit-toggle');
-    btn.disabled = true;
+    const seq = ++accessSeq;
+    pin = { owner, mode: 'login', maestra: false, back: null };
+    if (!pinModal.classList.contains('open')) pinFocus = document.activeElement;
+    pinLoadingState(owner);
+    pinModal.classList.add('open');
+    pinModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    setTimeout(() => { if (seq === accessSeq && !$('pin-loading').hidden) $('pin-cancel').focus(); }, 60);
     try {
       const st = await fetchPinState(owner);
-      pin = { owner, mode: 'login', maestra: st.maestra, back: null };
-      if (!st.configurado) mode = 'create';
-      else if (!mode) mode = 'login';
-      pinFocus = document.activeElement;
-      pinModal.classList.add('open');
-      pinModal.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('modal-open');
-      showPinMode(mode);
+      if (seq !== accessSeq || !pinModal.classList.contains('open')) return;
+      pin.maestra = st.maestra;
+      showPinMode(!st.configurado ? 'create' : (mode || 'login'));
     } catch (e) {
       console.error(e);
-      toast('No se pudo conectar con la nube. Inténtalo de nuevo.');
-    } finally {
-      btn.disabled = false;
+      if (seq !== accessSeq) return;
+      $('pin-loading').hidden = true;
+      const missing = e && (e.code === 'PGRST202' || e.code === '42883' || /could not find the function/i.test(e.message || ''));
+      $('pin-desc').textContent = missing ? 'A la base de datos le falta la última actualización.' : 'No se pudo comprobar el PIN.';
+      const help = $('pin-help');
+      help.hidden = false;
+      if (missing) {
+        help.innerHTML = 'En Supabase, abre <b>SQL Editor</b> y corre el archivo <code>supabase-regalos.sql</code> más reciente. Después vuelve a tocar “Editar mi lista”.';
+      } else {
+        help.textContent = 'Revisa tu conexión a internet e inténtalo de nuevo.';
+      }
+      $('pin-cancel').textContent = 'Cerrar';
     }
   }
   function closePin() {
@@ -1087,7 +1114,8 @@ const LISTAS = {
     const [v1, v2, v3] = pinIn.map(i => i.value);
     const nuevo = mode === 'create' ? v1 : v2;
     const confirma = mode === 'create' ? v2 : v3;
-    if (!v1) { pinIn[0].focus(); return; }
+    if (mode === 'create' && (!v1 || !v2)) { pinError('Escribe el PIN en los dos campos.'); pinIn[v1 ? 1 : 0].focus(); return; }
+    if (!v1) { pinError(mode === 'reset' ? 'Escribe la clave maestra.' : 'Escribe tu PIN.'); pinIn[0].focus(); return; }
     if (mode !== 'login') {
       if (nuevo.length < 4) { pinError('El PIN nuevo debe tener al menos 4 caracteres.'); pinIn[mode === 'create' ? 0 : 1].focus(); return; }
       if (nuevo !== confirma) { pinError('Los PIN no coinciden. Escríbelos de nuevo.'); pinIn[mode === 'create' ? 1 : 2].select(); return; }
