@@ -137,15 +137,8 @@
   .btn-danger { background: var(--surface); border-color: var(--line); color: var(--red); }
   .btn-danger:hover { background: var(--red-soft); border-color: var(--red); }
 
-  /* ---------- Aviso de borrador ---------- */
-  .draft-note {
-    display: flex; gap: 10px; align-items: flex-start; margin-bottom: 18px;
-    background: var(--gold-soft); border: 1px solid #ecdcb0; color: #6e5718;
-    border-radius: 12px; padding: 10px 14px; font-size: .85rem;
-  }
-  .draft-note svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
 
-  /* ---------- Editor de Dudu ---------- */
+  /* ---------- Editor ---------- */
   .editor {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
     box-shadow: var(--shadow); padding: 22px; margin-bottom: 26px;
@@ -169,13 +162,6 @@
   .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--green); background: #fff; box-shadow: 0 0 0 3px var(--green-soft); }
   .field select { font-size: 16px; width: 100%; min-height: 44px; }
   .form-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
-  .publish {
-    margin-top: 20px; padding-top: 18px; border-top: 1px dashed var(--line);
-    display: flex; flex-direction: column; gap: 12px;
-  }
-  .publish h3 { font-size: .9rem; font-weight: 600; }
-  .publish p { font-size: .82rem; color: var(--muted); max-width: 70ch; }
-  .publish-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
   /* ---------- Cuadrícula ---------- */
   .grid {
@@ -315,7 +301,7 @@
   @media (max-width: 600px) {
     .pills { justify-content: flex-start; width: calc(100% + 40px); margin: 0 -20px; padding: 4px 20px; }
     .editor { padding: 18px 16px; }
-    .publish-actions .btn, .form-actions .btn { flex: 1 1 auto; }
+    .form-actions .btn { flex: 1 1 auto; }
   }
   @media (min-width: 601px) { .pills { justify-content: center; flex-wrap: wrap; overflow: visible; } }
   @media (max-width: 520px) {
@@ -336,6 +322,54 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
   }
+
+  /* ---------- Nube: carga, avisos y PIN ---------- */
+  .loadbar { height: 2px; border-radius: 2px; margin: -14px 0 12px; overflow: hidden; background: transparent; opacity: 0; transition: opacity .2s; }
+  .loadbar.on { opacity: 1; }
+  .loadbar::before {
+    content: ""; display: block; height: 100%; width: 35%; border-radius: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    animation: slide 1.1s ease-in-out infinite;
+  }
+  @keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+  .skeleton { pointer-events: none; animation: none; }
+  .skeleton .sk { background: linear-gradient(90deg, #f3efe9 25%, #faf7f3 50%, #f3efe9 75%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; border-radius: 8px; }
+  .skeleton .sk-img { aspect-ratio: 4/3; border-radius: 0; }
+  .skeleton .sk-line { height: 14px; }
+  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  .notice {
+    grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;
+    padding: 40px 20px; color: var(--muted); border: 1.5px dashed var(--line); border-radius: var(--radius); background: rgba(255,255,255,.7);
+  }
+  .notice strong { color: var(--ink); font-family: "Fraunces", Georgia, serif; font-weight: 500; font-size: 1.15rem; }
+  .notice code { background: var(--gold-soft); color: #6e5718; padding: 1px 6px; border-radius: 6px; font-size: .85em; }
+  .lock-link { background: none; border: 0; color: var(--muted); font-size: .82rem; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 4px; }
+  .lock-link:hover { color: var(--red); }
+  .btn[disabled] { opacity: .65; pointer-events: none; }
+  .spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.45); border-top-color: #fff; animation: rot .7s linear infinite; flex: none; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  .pin-box {
+    position: relative; width: min(380px, 100%); background: var(--surface); border-radius: 20px;
+    box-shadow: 0 30px 80px rgba(31,42,36,.25); padding: 30px 26px 24px; text-align: center;
+    transform: translateY(14px) scale(.98); transition: transform .3s ease;
+  }
+  .modal.open .pin-box { transform: none; }
+  .pin-box .lock { width: 48px; height: 48px; margin: 0 auto 12px; border-radius: 50%; background: var(--gold-soft); color: #8a6d24; display: grid; place-items: center; }
+  .pin-box .lock svg { width: 22px; height: 22px; }
+  .pin-box h2 { font-family: "Fraunces", Georgia, serif; font-weight: 500; font-size: 1.35rem; color: var(--green); }
+  .pin-box p { color: var(--muted); font-size: .88rem; margin: 6px 0 18px; }
+  .pin-box input {
+    width: 100%; text-align: center; letter-spacing: .25em; font-size: 18px; padding: 12px;
+    border: 1px solid var(--line); border-radius: 12px; background: var(--bg); transition: border-color .2s, box-shadow .2s;
+  }
+  .pin-box input:focus { outline: none; border-color: var(--green); background: #fff; box-shadow: 0 0 0 3px var(--green-soft); }
+  .pin-box.error input { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
+  .pin-box.shake { animation: shake .35s ease; }
+  @keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+  .pin-error { min-height: 20px; margin-top: 8px; font-size: .82rem; color: var(--red); }
+  .pin-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .pin-actions .btn { flex: 1; }
 </style>
 </head>
 <body>
@@ -349,8 +383,8 @@
     <span></span></div>
     <div>
       <div class="tabs" role="tablist" aria-label="Elegir lista">
-        <button type="button" class="tab" role="tab" id="tab-Bubu" data-lista="Bubu" aria-controls="grid">Wishlist de <b>Bubu</b></button>
-        <button type="button" class="tab" role="tab" id="tab-Dudu" data-lista="Dudu" aria-controls="grid">Wishlist de <b>Dudu</b></button>
+        <button type="button" class="tab" role="tab" id="tab-bubu" data-lista="bubu" aria-controls="grid">Wishlist de <b>Bubu</b></button>
+        <button type="button" class="tab" role="tab" id="tab-dudu" data-lista="dudu" aria-controls="grid">Wishlist de <b>Dudu</b></button>
       </div>
     </div>
     <div class="swap" id="heading">
@@ -373,22 +407,17 @@
     </div>
   </nav>
 
-  <div class="draft-note" id="draft-note" hidden>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>
-    <span>Estás viendo cambios guardados <b>solo en este navegador</b>. Para que todos los vean, usa “Descargar index.html actualizado” y reemplaza el archivo en GitHub.</span>
-  </div>
-
-  <!-- Editor (solo para la lista de Dudu) -->
-  <section class="editor" id="editor" hidden aria-label="Editar lista de Dudu">
+  <!-- Editor (aparece al desbloquear con el PIN) -->
+  <section class="editor" id="editor" hidden aria-label="Editar lista">
     <div class="editor-head">
       <h2 id="form-title">Agregar regalo</h2>
-      <p>Los cambios se guardan solos en este navegador.</p>
+      <p>Se guarda en la nube al instante · <button type="button" class="lock-link" id="lock-btn">Bloquear edición</button></p>
     </div>
     <form id="gift-form" autocomplete="off" novalidate>
       <div class="form-grid">
         <div class="field wide name">
           <label for="f-nombre">Nombre del regalo</label>
-          <input type="text" id="f-nombre" maxlength="140" required placeholder="Ej. Paleta de sombras">
+          <input type="text" id="f-nombre" maxlength="140" required placeholder="Ej. Perfume, audífonos, peluche…">
         </div>
         <div class="field">
           <label for="f-categoria">Categoría</label>
@@ -408,7 +437,7 @@
         </div>
         <div class="field full">
           <label for="f-notas">Notas <span class="opt">(talla, tono, color…)</span></label>
-          <textarea id="f-notas" maxlength="500" placeholder="Ej. Tono nude, talla M"></textarea>
+          <textarea id="f-notas" maxlength="500" placeholder="Ej. Talla M, color negro"></textarea>
         </div>
       </div>
       <div class="form-actions">
@@ -419,28 +448,10 @@
         <button type="button" class="btn btn-ghost" id="form-cancel" hidden>Cancelar edición</button>
       </div>
     </form>
-
-    <div class="publish">
-      <h3>Guardar para todos</h3>
-      <p>Tus cambios por ahora solo se ven en este navegador. Descarga el <b>index.html</b> actualizado y reemplázalo en el repositorio de GitHub para que queden públicos.</p>
-      <div class="publish-actions">
-        <button type="button" class="btn btn-green" id="download-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
-          Descargar index.html actualizado
-        </button>
-        <button type="button" class="btn btn-ghost" id="copy-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg>
-          Copiar datos para el código
-        </button>
-        <button type="button" class="btn btn-danger" id="restore-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>
-          Restaurar lista publicada
-        </button>
-      </div>
-    </div>
   </section>
 
-  <main class="grid" id="grid" aria-live="polite"></main>
+  <div class="loadbar" id="loadbar" aria-hidden="true"></div>
+  <main class="grid" id="grid" aria-live="polite" aria-busy="false"></main>
 
   <footer>Feliz Navidad 🎄</footer>
 </div>
@@ -472,159 +483,65 @@
   </div>
 </div>
 
-<div class="toast" id="toast" role="status"><span id="toast-msg"></span><button type="button" id="toast-action" hidden>Deshacer</button></div>
+<!-- Modal del PIN -->
+<div class="modal" id="pin-modal" aria-hidden="true">
+  <form class="pin-box" id="pin-form" role="dialog" aria-modal="true" aria-labelledby="pin-title" novalidate>
+    <button type="button" class="modal-close" id="pin-close" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+    <h2 id="pin-title">Editar lista</h2>
+    <p id="pin-desc">Escribe tu PIN para editar.</p>
+    <input type="password" id="pin-input" autocomplete="current-password" maxlength="64" aria-describedby="pin-error" placeholder="••••••">
+    <div class="pin-error" id="pin-error" role="alert"></div>
+    <div class="pin-actions">
+      <button type="button" class="btn btn-ghost" id="pin-cancel">Cancelar</button>
+      <button type="submit" class="btn btn-green" id="pin-submit">Entrar</button>
+    </div>
+  </form>
+</div>
 
+<div class="toast" id="toast" role="status"><span id="toast-msg"></span><button type="button" id="toast-action" hidden>Reintentar</button></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js"></script>
 <script>
 /* =====================================================================
-   ✏️  EDITA TUS LISTAS AQUÍ
-   ---------------------------------------------------------------------
-   Cada regalo va entre llaves { } y separado por una coma.
-   - nombre:    el nombre del regalo (entre comillas)
-   - categoria: una de las categorías de esa lista (ver LISTAS más abajo).
-                Si la dejas vacía "" o escribes una que no existe, el regalo va a "Otros".
-   - precio:    solo el número, sin el signo $ (ej. 49.99). Vacío "" = no se muestra
-   - notas:     detalles como talla, tono o tamaño (vacío "" = no se muestra)
-   - imagen:    enlace a una foto (vacío "" = imagen por defecto)
-   - tienda:    enlace a la tienda (vacío "" = botón desactivado)
-
-   Enlaces directos:  tusitio.github.io/repo/#Bubu   o   tusitio.github.io/repo/#Dudu
-                      (también funciona ?lista=Dudu)
+   🔑  CONEXIÓN CON SUPABASE
+   Supabase → Project Settings → API (o "Connect") y copia:
+   - Project URL           → en SUPABASE_URL
+   - anon / public key     → en SUPABASE_ANON_KEY   (es pública: puede ir en GitHub)
    ===================================================================== */
+const SUPABASE_URL = 'sb_publishable_RiQVRLpTupgjrIXpSODKHg_JC20e3Zc';
+const SUPABASE_ANON_KEY = 'sb_secret_KYHXOcmGfGMJmksBBHN6MA_9VtDsUQz';
 
-// Título, subtítulo y categorías de cada lista ("Todos" se agrega solo al inicio).
-// Deja "Otros" al final: ahí van los regalos sin categoría o con una que no esté aquí.
+/* =====================================================================
+   ✏️  LISTAS
+   Título, subtítulo y categorías de cada lista ("Todos" se agrega solo al inicio).
+   Deja "Otros" al final: ahí van los regalos sin categoría o con una que no esté aquí.
+   Los regalos se agregan, editan y eliminan desde la página (botón "✏️ Editar mi lista").
+
+   Enlaces directos:  tusitio.github.io/repo/#bubu   o   tusitio.github.io/repo/#dudu
+                      (también funciona ?lista=dudu)
+   ===================================================================== */
 const LISTAS = {
-  Bubu: {
+  bubu: {
     nombre: "Bubu",
     subtitulo: "Hola, estas son mis opciones jiji",
     categorias: ["Perfumes", "Electrónicos", "Joyería", "Ropa", "Zapatos", "Otros"]
   },
-  Dudu: {
+  dudu: {
     nombre: "Dudu",
     subtitulo: "Mis ideas favoritas para esta Navidad",
-    categorias: ["Maquillaje", "Ropa", "Joyería", "Perfumes", "Electrónicos", "Medicina", "Peluches", "Accesorios", "Otros"]
+    categorias: ["Maquillaje", "Ropa", "Joyería", "Perfumes", "Electrónicos", "Medicina", "Peluches", "Otros"]
   },
 };
-
-// ---------------------------- Lista de Bubu ----------------------------
-const REGALOS_Bubu = [
-  {
-    nombre: "PERFUME ARMAF CLUB DE NUIT PRECIUEX EDP (55 ML)",
-    categoria: "Perfumes",
-    precio: 48.00,
-    notas: "Eau de Parfum · 55 ml",
-    imagen: "https://perfumeplanet.com.pa/cdn/shop/files/armaf-extrait-55ml-club-de-nuit-precieux-extrait-de-parfum-for-men-35667620593757.png?v=1792467747&width=1024",
-    tienda: "https://vtpanama.com/products/armaf-club-de-nuit-preciuex-edp-55-ml?_pos=4&_sid=5f8375ca7&_ss=r"
-  },
-  {
-    nombre: "PERFUME ARMAF ODYSSEY MANDARIN SKY EDP (100 ML)",
-    categoria: "Perfumes",
-    precio: 27.50,
-    notas: "Eau de Parfum · 100 ml",
-    imagen: "https://arrocha.com/cdn/shop/files/product-5084837.png?v=1754956251&width=800",
-    tienda: "https://vtpanama.com/products/armaf-mandarin-sky-edp-100-ml?_pos=1&_sid=d6ddb8b31&_ss=r"
-  },
-  {
-    nombre: "PERFUME ARMAF ODYSSEY AQUA EDP (100 ML)",
-    categoria: "Perfumes",
-    precio: 29.00,
-    notas: "Eau de Parfum · 100 ml",
-    imagen: "https://static.wixstatic.com/media/0db592_b6940debf274416a9630cfbbe79cf709~mv2.jpg/v1/fill/w_480,h_480,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/0db592_b6940debf274416a9630cfbbe79cf709~mv2.jpg",
-    tienda: "https://vtpanama.com/products/armaf-odyssey-aqua-edp-100-ml?_pos=7&_psq=Odyssey+Elixir&_psid=fed91291d&_ss=e"
-  },
-  {
-    nombre: "PERFUME AFNAN 9PM NIGHT OUT EDP (100 ML)",
-    categoria: "Perfumes",
-    precio: 45.00,
-    notas: "Eau de Parfum · 100 ml",
-    imagen: "https://vtpanama.com/cdn/shop/files/CopiadeDisenosintitulo_88.jpg?v=1774543317&width=1445",
-    tienda: "https://vtpanama.com/products/afnan-9pm-night-oud-edp-100-ml?_pos=1&_psq=9+pm+night&_psid=a2913c8c2&_ss=e"
-  },
-  {
-    nombre: "PERFUME FRENCH AVENUE LIQUID BRUN EDP (100 ML)",
-    categoria: "Perfumes",
-    precio: 35.00,
-    notas: "Eau de Parfum · 100 ml",
-    imagen: "https://static.wixstatic.com/media/53325f_c58d1ca138254dd58159cb62e1b9b6d9~mv2.jpg/v1/fit/w_500,h_500,q_90/file.jpg",
-    tienda: "https://vtpanama.com/products/french-avenue-liquid-brun-edp-100-ml?_pos=1&_sid=065a9ff23&_ss=r"
-  },
-  {
-    nombre: "PERFUME DECANT LATTAFA ART OF UNIVERSE EDP",
-    categoria: "Perfumes",
-    precio: 48.00,
-    notas: "",
-    imagen: "https://perfumeriaclass.com/cdn/shop/files/Listado24-11-2026-06-01T112240.321_1200x1200.jpg?v=1780334567",
-    tienda: "https://www.perfumeriamiracle.com/product-page/lattafa-art-of-universe-edp-100ml?srsltid=AYCX9vLKKswIQYbVt_mwM_PpgQpTnjuyJHMjaP_Y5jNbwq26piG6YGUq"
-  },
-  {
-    nombre: "PERFUME RAYHAAN ITALIA EDP FOR MEN",
-    categoria: "Perfumes",
-    precio: 40.00,
-    notas: "Eau de Parfum para hombre",
-    imagen: "https://m.media-amazon.com/images/I/71n2aRqFoQL.jpg",
-    tienda: "https://wafadutyfree.com/es/products/rayhaan-italia-edp-for-men?srsltid=AYCX9vL9i-ZttFVrehc7QWLGAgz0aohbFNK2Av1BqZ2F3aiW2SwsBDRj"
-  },
-  {
-    nombre: "SOPORTE PARA LAPTOP",
-    categoria: "Otros",
-    precio: "",
-    notas: "",
-    imagen: "",
-    tienda: ""
-  },
-  {
-    nombre: "Taza navideña",
-    categoria: "Otros",
-    precio: "",
-    notas: "",
-    imagen: "",
-    tienda: ""
-  },
-];
-
-// --------------------------- Lista de Dudu ---------------------------
-// Dudu puede editar esta lista desde la página con "✏️ Editar mi lista".
-// No borres las dos marcas Dudu:INICIO y Dudu:FIN: la página las usa para guardar.
-/*Dudu:INICIO*/
-const REGALOS_Dudu = [
-  {
-    nombre: "Paleta de sombras (ejemplo)",
-    categoria: "Maquillaje",
-    precio: 25,
-    notas: "Tonos cálidos o nude",
-    imagen: "",
-    tienda: ""
-  },
-  {
-    nombre: "Audífonos inalámbricos (ejemplo)",
-    categoria: "Electrónicos",
-    precio: 60,
-    notas: "Color blanco o rosado",
-    imagen: "",
-    tienda: ""
-  },
-  {
-    nombre: "Bolso pequeño (ejemplo)",
-    categoria: "Otros",
-    precio: "",
-    notas: "",
-    imagen: "",
-    tienda: ""
-  },
-];
-/*Dudu:FIN*/
 </script>
 
 <script>
 /* ===================== No hace falta editar debajo de esta línea ===================== */
 {
-  // Copia del código fuente tal como cargó (se usa al descargar el index.html actualizado)
-  const SNAPSHOT = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-  const MARK_START = '/*Dudu' + ':INICIO*/';
-  const MARK_END = '/*Dudu' + ':FIN*/';
-  const DRAFT_KEY = 'wishlist-Dudu-borrador';
-  const FIELDS = ['nombre', 'categoria', 'precio', 'notas', 'imagen', 'tienda'];
-
+  const OWNERS = Object.keys(LISTAS);
+  const FALLBACK_CAT = 'Otros';
   const FALLBACK_IMG = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
       <rect width="400" height="300" fill="#f4efe8"/>
@@ -645,7 +562,8 @@ const REGALOS_Dudu = [
     ext: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
     zoom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8.5v5M8.5 11h5"/></svg>',
     edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg>',
-    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+    plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
   };
 
   const $ = id => document.getElementById(id);
@@ -659,150 +577,141 @@ const REGALOS_Dudu = [
       return (u.protocol === 'http:' || u.protocol === 'https:') ? u.href : '';
     } catch { return ''; }
   }
-  function safeImg(value) {
-    if (!value) return '';
-    try {
-      const u = new URL(String(value).trim(), location.href);
-      return /^(https?|file):$/.test(u.protocol) ? u.href : '';
-    } catch { return ''; }
-  }
   function domainOf(url) { try { return new URL(url).hostname.replace(/^www\./i, ''); } catch { return ''; } }
   function parsePrice(v) {
     const t = String(v ?? '').replace(/[^\d.,]/g, '').replace(',', '.');
     const n = t === '' ? NaN : Number(t);
-    return Number.isFinite(n) && n > 0 ? n : null;
+    return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null;
   }
   const clean = v => String(v ?? '').trim();
   const keyOf = s => s.toLocaleLowerCase('es').normalize('NFD').replace(/[̀-ͯ]/g, '');
-  const FALLBACK_CAT = 'Otros';
   const catsOf = id => {
-    const list = (LISTAS[id] && Array.isArray(LISTAS[id].categorias) ? LISTAS[id].categorias : [])
-      .map(clean).filter(Boolean);
+    const list = (LISTAS[id] && Array.isArray(LISTAS[id].categorias) ? LISTAS[id].categorias : []).map(clean).filter(Boolean);
     return list.includes(FALLBACK_CAT) ? list : [...list, FALLBACK_CAT];
   };
-  // Devuelve la categoría oficial de esa lista (ignora mayúsculas y tildes) o "Otros"
+  // Categoría oficial de esa lista (ignora mayúsculas y tildes) o "Otros"
   const catFor = (c, id) => {
     const k = keyOf(clean(c));
     return (k && catsOf(id).find(x => keyOf(x) === k)) || FALLBACK_CAT;
   };
 
-  // Regalo "crudo" con los 6 campos, limpio (lo que se guarda y se exporta)
-  function rawGift(r, id) {
-    r = r || {};
-    const p = parsePrice(r.precio);
+  // ---------- Supabase ----------
+  const configured = !SUPABASE_URL.startsWith('TU_') && !SUPABASE_ANON_KEY.startsWith('TU_');
+  const libLoaded = !!(window.supabase && window.supabase.createClient);
+  let sb = null;
+  if (configured && libLoaded) {
+    try { sb = window.supabase.createClient(SUPABASE_URL.trim(), SUPABASE_ANON_KEY.trim()); }
+    catch (e) { console.error(e); }
+  }
+
+  // ---------- Estado ----------
+  const cache = Object.fromEntries(OWNERS.map(o => [o, null]));       // regalos por lista (null = sin cargar)
+  const failed = Object.fromEntries(OWNERS.map(o => [o, false]));
+  const state = Object.fromEntries(OWNERS.map(o => [o, { cat: 'Todos', order: 'default' }]));
+  const loadSeq = Object.fromEntries(OWNERS.map(o => [o, 0]));
+  let current = OWNERS[0];
+  let editing = false;
+  let editId = null;
+  let busy = false;
+
+  // PIN por lista: se recuerda solo mientras esta pestaña del navegador siga abierta
+  const PIN_KEY = o => 'wishlist-pin-' + o;
+  const getPin = o => { try { return sessionStorage.getItem(PIN_KEY(o)) || ''; } catch { return pinMem[o] || ''; } };
+  const pinMem = {};
+  function setPin(o, pin) {
+    pinMem[o] = pin;
+    try { pin ? sessionStorage.setItem(PIN_KEY(o), pin) : sessionStorage.removeItem(PIN_KEY(o)); } catch {}
+  }
+
+  // ---------- Carga de regalos ----------
+  const loadbar = $('loadbar');
+  const grid = $('grid');
+  let pending = 0;
+  function setLoading(on) {
+    pending = Math.max(0, pending + (on ? 1 : -1));
+    loadbar.classList.toggle('on', pending > 0);
+    grid.setAttribute('aria-busy', String(pending > 0));
+  }
+
+  function rowToItem(row, i, owner) {
+    const tienda = safeUrl(row.tienda);
     return {
-      nombre: clean(r.nombre).slice(0, 140),
-      categoria: catFor(r.categoria, id),
-      precio: p === null ? '' : Math.round(p * 100) / 100,
-      notas: clean(r.notas).slice(0, 500),
-      imagen: clean(r.imagen),
-      tienda: clean(r.tienda)
+      id: row.id, i,
+      nombre: clean(row.nombre),
+      categoria: catFor(row.categoria, owner),
+      notas: clean(row.notas),
+      precio: parsePrice(row.precio),
+      imagen: safeUrl(row.imagen),
+      tienda,
+      dominio: tienda ? domainOf(tienda) : ''
     };
   }
-  const rawList = (arr, id) => (Array.isArray(arr) ? arr : []).map(r => rawGift(r, id)).filter(r => r.nombre);
 
-  // Regalo listo para mostrar (sin duplicados); "i" es su posición en la lista original
-  function viewItems(list) {
-    const seen = new Set();
-    const out = [];
-    list.forEach((r, i) => {
-      const tienda = safeUrl(r.tienda);
-      const k = keyOf(r.nombre) + '|' + tienda;
-      if (seen.has(k)) return;
-      seen.add(k);
-      out.push({
-        i, nombre: r.nombre, tienda,
-        categoria: r.categoria, notas: r.notas,
-        precio: parsePrice(r.precio),
-        imagen: safeImg(r.imagen),
-        dominio: tienda ? domainOf(tienda) : ''
-      });
-    });
-    return out;
-  }
-
-  // ---------- Datos ----------
-  const PUBLISHED_Dudu = rawList(typeof REGALOS_Dudu !== 'undefined' ? REGALOS_Dudu : [], 'Dudu');
-  const data = {
-    Bubu: rawList(typeof REGALOS_Bubu !== 'undefined' ? REGALOS_Bubu : [], 'Bubu'),
-    Dudu: PUBLISHED_Dudu.map(r => ({ ...r }))
-  };
-  const state = { Bubu: { cat: 'Todos', order: 'default' }, Dudu: { cat: 'Todos', order: 'default' } };
-  let current = 'Bubu';
-  let editing = false;
-  let editIndex = null;
-
-  // Borrador local de Dudu
-  function toCode(list) {
-    const q = v => JSON.stringify(String(v)).replace(/</g, '\\u003c');
-    const body = list.map(r => '  {\n' + FIELDS.map(k =>
-      '    ' + k + ': ' + (k === 'precio' ? (r.precio === '' ? '""' : String(r.precio)) : q(r[k]))
-    ).join(',\n') + '\n  },').join('\n');
-    return 'const REGALOS_Dudu = [\n' + body + (list.length ? '\n' : '') + '];';
-  }
-  const publishedCode = toCode(PUBLISHED_Dudu);
-  const isDirty = () => toCode(data.Dudu) !== publishedCode;
-
-  function loadDraft() {
+  async function loadList(owner) {
+    if (!sb) return;
+    const seq = ++loadSeq[owner];
+    setLoading(true);
+    if (owner === current && cache[owner] === null) renderSkeleton();
     try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (!raw) return;
-      const list = rawList(JSON.parse(raw), 'Dudu');   // normaliza categorías antiguas
-      if (JSON.stringify(list) !== raw) localStorage.setItem(DRAFT_KEY, JSON.stringify(list));
-      if (toCode(list) === publishedCode) { localStorage.removeItem(DRAFT_KEY); return; } // ya está publicado
-      data.Dudu = list;
-    } catch {}
+      const { data, error } = await sb
+        .from('regalos')
+        .select('id, owner, nombre, categoria, precio, imagen, tienda, notas, created_at')
+        .eq('owner', owner)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      if (seq !== loadSeq[owner]) return;                 // llegó una respuesta más nueva
+      cache[owner] = (data || []).map((r, i) => rowToItem(r, i, owner)).filter(it => it.nombre);
+      failed[owner] = false;
+    } catch (e) {
+      console.error(e);
+      if (seq !== loadSeq[owner]) return;
+      failed[owner] = true;
+      if (cache[owner] !== null) toast('No se pudo actualizar la lista', () => loadList(owner));
+    } finally {
+      setLoading(false);
+    }
+    if (owner === current) refresh();
   }
-  function saveDraft() {
-    try {
-      if (isDirty()) localStorage.setItem(DRAFT_KEY, JSON.stringify(data.Dudu));
-      else localStorage.removeItem(DRAFT_KEY);
-    } catch { toast('No se pudo guardar en este navegador'); }
-    updateDraftNote();
-  }
-  function updateDraftNote() {
-    $('draft-note').hidden = !(current === 'Dudu' && isDirty());
-  }
-  loadDraft();
 
   // ---------- Encabezado y pestañas ----------
   const tabs = [...document.querySelectorAll('.tab')];
   function paintHeader() {
     const info = LISTAS[current] || { nombre: current, subtitulo: '' };
-    const t = $('title');
-    t.replaceChildren('Wishlist de ', Object.assign(document.createElement('em'), { textContent: info.nombre }));
+    $('title').replaceChildren('Wishlist de ', Object.assign(document.createElement('em'), { textContent: info.nombre }));
     $('subtitle').textContent = info.subtitulo || '';
     document.title = 'Wishlist de ' + info.nombre;
     tabs.forEach(b => b.setAttribute('aria-selected', String(b.dataset.lista === current)));
   }
 
+  const ALIAS = { ian: 'bubu', linda: 'dudu' };   // enlaces antiguos siguen funcionando
   function listFromUrl() {
-    const h = location.hash.replace('#', '').toLowerCase();
-    if (h === 'Bubu' || h === 'Dudu') return h;
-    const q = new URLSearchParams(location.search).get('lista');
-    if (q && (q.toLowerCase() === 'Bubu' || q.toLowerCase() === 'Dudu')) return q.toLowerCase();
-    return 'Bubu';
+    const norm = v => { v = clean(v).toLowerCase(); v = ALIAS[v] || v; return OWNERS.includes(v) ? v : ''; };
+    return norm(location.hash.replace('#', '')) || norm(new URLSearchParams(location.search).get('lista')) || OWNERS[0];
   }
 
   function switchTo(id, opts = {}) {
-    if (!data[id]) id = 'Bubu';
+    if (!OWNERS.includes(id)) id = OWNERS[0];
     const changed = id !== current;
     current = id;
-    if (id !== 'Dudu' && editing) setEditing(false);
+    if (editing) setEditing(false, { silent: true });
     if (!opts.silentUrl) {
-      try { history.replaceState(null, '', location.pathname + '#' + id); } catch { location.hash = id; }
+      const qs = new URLSearchParams(location.search);
+      qs.delete('lista');
+      const q = qs.toString();
+      try { history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + '#' + id); }
+      catch { location.hash = id; }
     }
-    $('edit-toggle').hidden = id !== 'Dudu';
+    $('edit-toggle').hidden = !sb;
     $('sort').value = state[id].order;
-    updateDraftNote();
     if (changed && !opts.instant) {
       const head = $('heading');
       head.classList.add('fading');
       setTimeout(() => { paintHeader(); head.classList.remove('fading'); }, 180);
-      buildPills(); update();
+      fadeTo(refresh);
     } else {
-      paintHeader(); buildPills(); render();
+      paintHeader(); refresh();
     }
+    loadList(id);                                          // siempre trae lo más reciente
   }
   tabs.forEach(b => b.addEventListener('click', () => switchTo(b.dataset.lista)));
   window.addEventListener('hashchange', () => { const id = listFromUrl(); if (id !== current) switchTo(id, { silentUrl: true }); });
@@ -810,7 +719,7 @@ const REGALOS_Dudu = [
   // ---------- Píldoras y orden ----------
   const pills = $('pills');
   function buildPills() {
-    const items = viewItems(data[current]);
+    const items = cache[current] || [];
     const cats = ['Todos', ...catsOf(current)];
     if (!cats.includes(state[current].cat)) state[current].cat = 'Todos';   // evita vistas vacías por error
     pills.replaceChildren();
@@ -825,7 +734,7 @@ const REGALOS_Dudu = [
       b.setAttribute('aria-selected', String(on));
       b.innerHTML = '<span></span><span class="count"></span>';
       b.firstChild.textContent = cat;
-      b.lastChild.textContent = n;
+      b.lastChild.textContent = cache[current] === null ? '·' : n;
       b.addEventListener('click', () => {
         if (state[current].cat === cat) return;
         state[current].cat = cat;
@@ -835,24 +744,24 @@ const REGALOS_Dudu = [
           p.setAttribute('aria-selected', String(a));
         });
         b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-        update();
+        if (editing && !editId) fCat.value = cat === 'Todos' ? FALLBACK_CAT : cat;
+        fadeTo(render);
       });
       pills.appendChild(b);
     });
   }
-  $('sort').addEventListener('change', e => { state[current].order = e.target.value; update(); });
+  $('sort').addEventListener('change', e => { state[current].order = e.target.value; fadeTo(render); });
 
   // ---------- Tarjetas ----------
-  const grid = $('grid');
   function visibleItems() {
     const st = state[current];
-    let list = viewItems(data[current]);
+    let list = (cache[current] || []).slice();
     if (st.cat !== 'Todos') list = list.filter(it => it.categoria === st.cat);
     if (st.order !== 'default') {
       const dir = st.order === 'asc' ? 1 : -1;
       list.sort((a, b) => {
         if (a.precio === null && b.precio === null) return a.i - b.i;
-        if (a.precio === null) return 1;      // sin precio siempre al final
+        if (a.precio === null) return 1;       // sin precio siempre al final
         if (b.precio === null) return -1;
         return (a.precio - b.precio) * dir || a.i - b.i;
       });
@@ -878,7 +787,7 @@ const REGALOS_Dudu = [
 
   function card(it, idx) {
     const el = document.createElement('article');
-    el.className = 'card' + (editing && current === 'Dudu' && editIndex === it.i ? ' editing-this' : '');
+    el.className = 'card' + (editing && editId === it.id ? ' editing-this' : '');
     el.style.animationDelay = Math.min(idx * 50, 400) + 'ms';
 
     const imgBtn = document.createElement('button');
@@ -888,12 +797,10 @@ const REGALOS_Dudu = [
     const img = makeImg(it.imagen, it.nombre);
     img.loading = 'lazy';
     imgBtn.appendChild(img);
-    if (it.categoria) {
-      const tag = document.createElement('span');
-      tag.className = 'cat-tag';
-      tag.textContent = it.categoria;
-      imgBtn.appendChild(tag);
-    }
+    const tag = document.createElement('span');
+    tag.className = 'cat-tag';
+    tag.textContent = it.categoria;
+    imgBtn.appendChild(tag);
     const zoom = document.createElement('span');
     zoom.className = 'zoom';
     zoom.innerHTML = ICON.zoom;
@@ -901,18 +808,18 @@ const REGALOS_Dudu = [
     imgBtn.addEventListener('click', () => openModal(it, imgBtn));
     el.appendChild(imgBtn);
 
-    if (editing && current === 'Dudu') {
+    if (editing) {
       el.classList.add('tools-on');
       const tools = document.createElement('div');
       tools.className = 'card-tools';
       const eb = document.createElement('button');
       eb.type = 'button'; eb.className = 'icon-btn edit'; eb.innerHTML = ICON.edit;
       eb.title = 'Editar'; eb.setAttribute('aria-label', 'Editar ' + it.nombre);
-      eb.addEventListener('click', () => startEdit(it.i));
+      eb.addEventListener('click', () => startEdit(it.id));
       const db = document.createElement('button');
       db.type = 'button'; db.className = 'icon-btn del'; db.innerHTML = ICON.trash;
       db.title = 'Eliminar'; db.setAttribute('aria-label', 'Eliminar ' + it.nombre);
-      db.addEventListener('click', () => removeGift(it.i));
+      db.addEventListener('click', () => removeGift(it.id));
       tools.append(eb, db);
       el.appendChild(tools);
     }
@@ -952,15 +859,58 @@ const REGALOS_Dudu = [
     return el;
   }
 
-  function render() {
-    const list = visibleItems();
+  function notice(title, html, action) {
+    const box = document.createElement('div');
+    box.className = 'notice';
+    const t = document.createElement('strong');
+    t.textContent = title;
+    const p = document.createElement('p');
+    p.innerHTML = html;
+    box.append(t, p);
+    if (action) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn btn-ghost'; b.textContent = action.label;
+      b.addEventListener('click', action.run);
+      box.appendChild(b);
+    }
+    return box;
+  }
+
+  function renderSkeleton() {
     grid.replaceChildren();
+    for (let k = 0; k < 4; k++) {
+      const el = document.createElement('div');
+      el.className = 'card skeleton';
+      el.innerHTML = '<div class="sk sk-img"></div><div class="card-body"><div class="sk sk-line" style="width:85%"></div><div class="sk sk-line" style="width:55%"></div><div class="card-foot"><div class="sk sk-line" style="width:35%;height:18px"></div><div class="sk" style="height:42px"></div></div></div>';
+      grid.appendChild(el);
+    }
+  }
+
+  function render() {
+    grid.replaceChildren();
+    if (!configured) {
+      grid.appendChild(notice('Falta conectar Supabase',
+        'Reemplaza <code>TU_SUPABASE_URL</code> y <code>TU_SUPABASE_ANON_KEY</code> al inicio del código con los datos de tu proyecto.'));
+      return;
+    }
+    if (!sb) {
+      grid.appendChild(notice('No se pudo conectar', 'Revisa tu conexión a internet y vuelve a cargar la página.',
+        { label: 'Volver a cargar', run: () => location.reload() }));
+      return;
+    }
+    if (cache[current] === null) {
+      if (failed[current]) {
+        grid.appendChild(notice('No se pudieron cargar los regalos', 'Puede ser la conexión o la configuración de Supabase.',
+          { label: 'Reintentar', run: () => loadList(current) }));
+      } else renderSkeleton();
+      return;
+    }
+    const list = visibleItems();
     if (!list.length) {
       const empty = document.createElement('div');
       empty.className = 'empty-state';
-      const total = data[current].length;
-      empty.textContent = !total
-        ? (current === 'Dudu' && editing ? 'Tu lista está vacía. Agrega tu primer deseo con el formulario 🎁' : 'Pronto agregaré mis deseos 🎁')
+      empty.textContent = !cache[current].length
+        ? (editing ? 'Tu lista está vacía. Agrega tu primer deseo con el formulario 🎁' : 'Pronto agregaré mis deseos 🎁')
         : 'Aún no hay regalos en esta categoría 🎁';
       grid.appendChild(empty);
       return;
@@ -971,62 +921,130 @@ const REGALOS_Dudu = [
   }
 
   let fadeTimer;
-  function update() {
+  function fadeTo(fn) {
     clearTimeout(fadeTimer);
     grid.classList.add('fading');
-    fadeTimer = setTimeout(() => { render(); requestAnimationFrame(() => grid.classList.remove('fading')); }, 180);
+    fadeTimer = setTimeout(() => { fn(); requestAnimationFrame(() => grid.classList.remove('fading')); }, 180);
   }
   function refresh() { buildPills(); render(); }
 
-  // ---------- Modo edición (Dudu) ----------
+  // ---------- PIN ----------
+  const pinModal = $('pin-modal');
+  const pinBox = $('pin-form');
+  let pinOwner = null, pinFocus = null;
+
+  function openPin(owner) {
+    pinOwner = owner;
+    pinFocus = document.activeElement;
+    $('pin-title').textContent = 'Editar lista de ' + LISTAS[owner].nombre;
+    $('pin-desc').textContent = 'Escribe el PIN de ' + LISTAS[owner].nombre + ' para agregar, editar o eliminar regalos.';
+    $('pin-input').value = '';
+    $('pin-error').textContent = '';
+    pinBox.classList.remove('error');
+    pinModal.classList.add('open');
+    pinModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    setTimeout(() => $('pin-input').focus(), 60);
+  }
+  function closePin() {
+    if (!pinModal.classList.contains('open')) return;
+    pinModal.classList.remove('open');
+    pinModal.setAttribute('aria-hidden', 'true');
+    if (!modal.classList.contains('open')) document.body.classList.remove('modal-open');
+    if (pinFocus && document.contains(pinFocus)) pinFocus.focus();
+  }
+  $('pin-close').addEventListener('click', closePin);
+  $('pin-cancel').addEventListener('click', closePin);
+  pinModal.addEventListener('click', e => { if (e.target === pinModal) closePin(); });
+
+  pinBox.addEventListener('submit', async e => {
+    e.preventDefault();
+    const pin = $('pin-input').value;
+    if (!pin) { $('pin-input').focus(); return; }
+    const btn = $('pin-submit');
+    btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Verificando';
+    try {
+      const { data, error } = await sb.rpc('pin_valido', { p_owner: pinOwner, p_pin: pin });
+      if (error) throw error;
+      if (data === true) {
+        setPin(pinOwner, pin);
+        closePin();
+        if (pinOwner === current) setEditing(true);
+        toast('Modo edición activado');
+      } else {
+        $('pin-error').textContent = 'PIN incorrecto. Inténtalo de nuevo.';
+        pinBox.classList.add('error');
+        pinBox.classList.remove('shake'); void pinBox.offsetWidth; pinBox.classList.add('shake');
+        $('pin-input').select();
+      }
+    } catch (err) {
+      console.error(err);
+      $('pin-error').textContent = 'No se pudo verificar. Revisa la conexión.';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Entrar';
+    }
+  });
+
+  // ---------- Modo edición ----------
   const form = $('gift-form');
   const fCat = $('f-categoria');
   function fillCategoryOptions(selected) {
-    const cats = catsOf('Dudu');
     fCat.replaceChildren();
-    cats.forEach(c => fCat.appendChild(Object.assign(document.createElement('option'), { value: c, textContent: c })));
-    // Por defecto: la categoría que Dudu está viendo (si no es "Todos"); si no, "Otros"
-    const viewing = state.Dudu.cat !== 'Todos' ? state.Dudu.cat : FALLBACK_CAT;
-    fCat.value = selected ? catFor(selected, 'Dudu') : viewing;
+    catsOf(current).forEach(c => fCat.appendChild(Object.assign(document.createElement('option'), { value: c, textContent: c })));
+    const viewing = state[current].cat !== 'Todos' ? state[current].cat : FALLBACK_CAT;
+    fCat.value = selected ? catFor(selected, current) : viewing;
   }
 
-  function setEditing(on) {
+  function setEditing(on, opts = {}) {
     editing = on;
     const btn = $('edit-toggle');
     btn.classList.toggle('on', on);
     btn.textContent = on ? '✓ Listo' : '✏️ Editar mi lista';
     btn.setAttribute('aria-pressed', String(on));
     $('editor').hidden = !on;
-    if (on) { resetForm(); }
-    else { editIndex = null; }
-    render();
+    resetForm();
+    if (!opts.silent) render();
   }
   $('edit-toggle').addEventListener('click', () => {
-    setEditing(!editing);
-    if (editing) $('editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (editing) { setEditing(false); return; }
+    if (getPin(current)) {
+      setEditing(true);
+      $('editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else openPin(current);
+  });
+  $('lock-btn').addEventListener('click', () => {
+    setPin(current, '');
+    setEditing(false);
+    toast('Edición bloqueada en este navegador');
   });
 
   function resetForm() {
     form.reset();
-    editIndex = null;
+    editId = null;
     fillCategoryOptions('');
     $('form-title').textContent = 'Agregar regalo';
-    $('form-submit').lastElementChild.textContent = 'Agregar a mi lista';
+    setSubmitLabel('Agregar a mi lista');
     $('form-cancel').hidden = true;
   }
+  function setSubmitLabel(text, loading) {
+    const b = $('form-submit');
+    b.disabled = !!loading;
+    b.innerHTML = (loading ? '<span class="spin"></span>' : (editId ? '' : ICON.plus)) + '<span></span>';
+    b.lastChild.textContent = text;
+  }
 
-  function startEdit(i) {
-    const r = data.Dudu[i];
-    if (!r) return;
-    editIndex = i;
-    $('f-nombre').value = r.nombre;
-    fillCategoryOptions(r.categoria);
-    $('f-precio').value = r.precio === '' ? '' : r.precio;
-    $('f-tienda').value = r.tienda;
-    $('f-imagen').value = r.imagen;
-    $('f-notas').value = r.notas;
+  function startEdit(id) {
+    const it = (cache[current] || []).find(x => x.id === id);
+    if (!it) return;
+    editId = id;
+    $('f-nombre').value = it.nombre;
+    fillCategoryOptions(it.categoria);
+    $('f-precio').value = it.precio === null ? '' : it.precio;
+    $('f-tienda').value = it.tienda;
+    $('f-imagen').value = it.imagen;
+    $('f-notas').value = it.notas;
     $('form-title').textContent = 'Editar regalo';
-    $('form-submit').lastElementChild.textContent = 'Guardar cambios';
+    setSubmitLabel('Guardar cambios');
     $('form-cancel').hidden = false;
     render();
     $('editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1034,105 +1052,107 @@ const REGALOS_Dudu = [
   }
   $('form-cancel').addEventListener('click', () => { resetForm(); render(); });
 
-  form.addEventListener('submit', e => {
+  // Si el PIN dejó de servir (lo cambiaron), pide de nuevo
+  function handleWriteError(err) {
+    console.error(err);
+    const msg = (err && (err.message || err.details)) || '';
+    if ((err && err.code === '28P01') || /PIN incorrecto/i.test(msg)) {
+      setPin(current, '');
+      setEditing(false);
+      toast('El PIN no es válido. Vuelve a ingresarlo.');
+      openPin(current);
+      return;
+    }
+    if (/no existe/i.test(msg)) { toast('Ese regalo ya no existe; actualicé la lista'); loadList(current); return; }
+    toast('No se pudo guardar. Revisa la conexión e inténtalo de nuevo.');
+  }
+
+  form.addEventListener('submit', async e => {
     e.preventDefault();
+    if (busy) return;
+    const owner = current;
     const nombre = $('f-nombre').value.trim();
     if (!nombre) { $('f-nombre').focus(); toast('Escribe el nombre del regalo'); return; }
     const tienda = $('f-tienda').value.trim();
     const imagen = $('f-imagen').value.trim();
     if (tienda && !safeUrl(tienda)) { $('f-tienda').focus(); toast('La URL de compra debe empezar con http:// o https://'); return; }
     if (imagen && !safeUrl(imagen)) { $('f-imagen').focus(); toast('La URL de la imagen debe empezar con http:// o https://'); return; }
-    const gift = rawGift({ nombre, categoria: fCat.value, precio: $('f-precio').value, notas: $('f-notas').value, imagen, tienda }, 'Dudu');
-    const wasEdit = editIndex !== null && data.Dudu[editIndex];
-    if (wasEdit) data.Dudu[editIndex] = gift;
-    else data.Dudu.push(gift);
-    // Si el regalo no es de la categoría que se está viendo, vuelve a "Todos" para que no quede oculto
-    if (state.Dudu.cat !== 'Todos' && gift.categoria !== state.Dudu.cat) state.Dudu.cat = 'Todos';
-    saveDraft();
-    resetForm();
-    refresh();
-    toast(wasEdit ? 'Cambios guardados' : '✨ Regalo agregado');
-    $('f-nombre').focus({ preventScroll: true });
+    const categoria = catFor(fCat.value, owner);
+    const params = {
+      p_owner: owner, p_pin: getPin(owner),
+      p_nombre: nombre.slice(0, 140), p_categoria: categoria,
+      p_precio: parsePrice($('f-precio').value),
+      p_imagen: imagen, p_tienda: tienda,
+      p_notas: $('f-notas').value.trim().slice(0, 500)
+    };
+    const wasEdit = !!editId;
+    busy = true;
+    setSubmitLabel(wasEdit ? 'Guardando…' : 'Agregando…', true);
+    try {
+      const { error } = wasEdit
+        ? await sb.rpc('editar_regalo', { p_id: editId, ...params })
+        : await sb.rpc('agregar_regalo', params);
+      if (error) throw error;
+      // Si el regalo no es de la categoría que se está viendo, vuelve a "Todos" para que no quede oculto
+      if (state[owner].cat !== 'Todos' && categoria !== state[owner].cat) state[owner].cat = 'Todos';
+      resetForm();
+      toast(wasEdit ? 'Cambios guardados ☁️' : '✨ Regalo agregado');
+      await loadList(owner);
+      $('f-nombre').focus({ preventScroll: true });
+    } catch (err) {
+      setSubmitLabel(wasEdit ? 'Guardar cambios' : 'Agregar a mi lista');
+      handleWriteError(err);
+    } finally {
+      busy = false;
+    }
   });
 
-  let lastDeleted = null;
-  function removeGift(i) {
-    const r = data.Dudu[i];
-    if (!r) return;
-    lastDeleted = { gift: r, i };
-    data.Dudu.splice(i, 1);
-    // Si la categoría que se está viendo quedó vacía, vuelve a "Todos"
-    if (state.Dudu.cat !== 'Todos' && !data.Dudu.some(g => g.categoria === state.Dudu.cat)) state.Dudu.cat = 'Todos';
-    if (editIndex === i) resetForm();
-    else if (editIndex !== null && editIndex > i) editIndex--;
-    saveDraft();
-    refresh();
-    toast('Regalo eliminado', () => {
-      if (!lastDeleted) return;
-      data.Dudu.splice(Math.min(lastDeleted.i, data.Dudu.length), 0, lastDeleted.gift);
-      lastDeleted = null;
-      saveDraft();
+  async function removeGift(id) {
+    const owner = current;
+    const it = (cache[owner] || []).find(x => x.id === id);
+    if (!it || busy) return;
+    if (!confirm('¿Eliminar "' + it.nombre + '" de la lista?')) return;
+    busy = true;
+    setLoading(true);
+    try {
+      const { error } = await sb.rpc('eliminar_regalo', { p_id: id, p_owner: owner, p_pin: getPin(owner) });
+      if (error) throw error;
+      if (editId === id) resetForm();
+      cache[owner] = cache[owner].filter(x => x.id !== id);
+      // Si la categoría que se está viendo quedó vacía, vuelve a "Todos"
+      if (state[owner].cat !== 'Todos' && !cache[owner].some(x => x.categoria === state[owner].cat)) state[owner].cat = 'Todos';
       refresh();
+      toast('Regalo eliminado');
+      loadList(owner);
+    } catch (err) {
+      handleWriteError(err);
+    } finally {
+      busy = false;
+      setLoading(false);
+    }
+  }
+
+  // ---------- Tiempo real: si alguien cambia algo desde otro dispositivo ----------
+  let rtTimer;
+  function scheduleReload() {
+    clearTimeout(rtTimer);
+    rtTimer = setTimeout(() => OWNERS.forEach(o => { if (cache[o] !== null || o === current) loadList(o); }), 400);
+  }
+  if (sb) {
+    try {
+      sb.channel('regalos-cambios')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'regalos' }, scheduleReload)
+        .subscribe();
+    } catch (e) { console.warn('Tiempo real no disponible', e); }
+    // Al volver a la pestaña después de un rato, refresca por si acaso
+    let hiddenAt = 0;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) hiddenAt = Date.now();
+      else if (Date.now() - hiddenAt > 30000) loadList(current);
     });
   }
 
-  // Copiar datos
-  async function copyText(text) {
-    try { await navigator.clipboard.writeText(text); return true; }
-    catch {
-      const ta = document.createElement('textarea');
-      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
-      document.body.appendChild(ta); ta.select();
-      let ok = false;
-      try { ok = document.execCommand('copy'); } catch {}
-      ta.remove();
-      return ok;
-    }
-  }
-  $('copy-btn').addEventListener('click', async () => {
-    const ok = await copyText(toCode(data.Dudu));
-    toast(ok ? 'Copiado: pégalo reemplazando const REGALOS_Dudu = [...] en el código' : 'No se pudo copiar en este navegador');
-  });
-
-  // Descargar index.html actualizado
-  async function getSource() {
-    if (/^https?:$/.test(location.protocol)) {
-      try {
-        const r = await fetch(location.pathname + location.search, { cache: 'no-store' });
-        if (r.ok) { const t = await r.text(); if (t.includes(MARK_START) && t.includes(MARK_END)) return t; }
-      } catch {}
-    }
-    return SNAPSHOT;
-  }
-  $('download-btn').addEventListener('click', async () => {
-    const src = await getSource();
-    const s = src.indexOf(MARK_START);
-    const e = src.indexOf(MARK_END, s);
-    if (s === -1 || e === -1) { toast('No encontré las marcas Dudu en el código'); return; }
-    const html = src.slice(0, s + MARK_START.length) + '\n' + toCode(data.Dudu) + '\n' + src.slice(e);
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'index.html';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
-    toast('index.html descargado: súbelo a GitHub para publicarlo');
-  });
-
-  // Restaurar lista publicada
-  $('restore-btn').addEventListener('click', () => {
-    if (!isDirty()) { toast('Ya estás viendo la lista publicada'); return; }
-    if (!confirm('¿Descartar tus cambios locales y volver a la lista publicada?')) return;
-    data.Dudu = PUBLISHED_Dudu.map(r => ({ ...r }));
-    saveDraft();
-    resetForm();
-    refresh();
-    toast('Lista publicada restaurada');
-  });
-
-  // ---------- Modal ----------
+  // ---------- Modal de vista rápida ----------
   const modal = $('modal');
   let lastFocus = null;
   function openModal(it, opener) {
@@ -1142,9 +1162,7 @@ const REGALOS_Dudu = [
     mImg.src = it.imagen || FALLBACK_IMG;
     mImg.alt = it.nombre;
     $('modal-title').textContent = it.nombre;
-    const cat = $('modal-cat');
-    cat.textContent = it.categoria;
-    cat.hidden = !it.categoria;
+    $('modal-cat').textContent = it.categoria;
     const price = $('modal-price');
     price.textContent = it.precio === null ? 'Sin precio' : money.format(it.precio);
     price.classList.toggle('none', it.precio === null);
@@ -1170,10 +1188,11 @@ const REGALOS_Dudu = [
   $('modal-close').addEventListener('click', closeModal);
   modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
   document.addEventListener('keydown', e => {
-    if (!modal.classList.contains('open')) return;
-    if (e.key === 'Escape') { closeModal(); return; }
-    if (e.key === 'Tab') {
-      const f = [...modal.querySelectorAll('button, a[href]')].filter(el => !el.hidden && el.offsetParent !== null);
+    const open = [modal, pinModal].find(m => m.classList.contains('open'));
+    if (!open) return;
+    if (e.key === 'Escape') { open === modal ? closeModal() : closePin(); return; }
+    if (e.key === 'Tab') {                    // mantener el foco dentro del cuadro abierto
+      const f = [...open.querySelectorAll('button, a[href], input')].filter(el => !el.hidden && !el.disabled && el.offsetParent !== null);
       if (!f.length) return;
       const first = f[0], last = f[f.length - 1];
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
@@ -1183,14 +1202,14 @@ const REGALOS_Dudu = [
 
   // ---------- Aviso flotante ----------
   let toastTimer;
-  function toast(msg, undo) {
+  function toast(msg, retry) {
     const t = $('toast'), action = $('toast-action');
     $('toast-msg').textContent = msg;
-    action.hidden = !undo;
-    action.onclick = undo ? () => { undo(); t.classList.remove('show'); } : null;
+    action.hidden = !retry;
+    action.onclick = retry ? () => { retry(); t.classList.remove('show'); } : null;
     t.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { t.classList.remove('show'); if (undo) lastDeleted = null; }, undo ? 5000 : 2800);
+    toastTimer = setTimeout(() => t.classList.remove('show'), retry ? 6000 : 2800);
   }
 
   // ---------- Nieve ----------
@@ -1253,6 +1272,8 @@ const REGALOS_Dudu = [
   // ---------- Inicio ----------
   current = listFromUrl();
   switchTo(current, { instant: true, silentUrl: true });
+  // Precarga la otra lista en segundo plano para que el cambio de pestaña sea inmediato
+  if (sb) setTimeout(() => OWNERS.forEach(o => { if (o !== current && cache[o] === null) loadList(o); }), 800);
 }
 </script>
 </body>
