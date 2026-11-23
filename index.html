@@ -368,6 +368,13 @@
   .pin-box.shake { animation: shake .35s ease; }
   @keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
   .pin-error { min-height: 20px; margin-top: 8px; font-size: .82rem; color: var(--red); }
+  .pin-field { display: block; text-align: left; margin-bottom: 10px; }
+  .pin-field > span { display: block; font-size: .8rem; font-weight: 500; color: var(--ink); margin: 0 0 5px 2px; }
+  .pin-field.solo > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .pin-help { font-size: .84rem; color: var(--muted); text-align: left; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; line-height: 1.5; }
+  .pin-help code { background: var(--gold-soft); color: #6e5718; padding: 1px 5px; border-radius: 6px; font-size: .78rem; overflow-wrap: anywhere; }
+  .pin-link { margin-top: 14px; background: none; border: 0; color: var(--muted); font-size: .84rem; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; padding: 4px; }
+  .pin-link:hover { color: #8a6d24; }
   .pin-actions { display: flex; gap: 8px; margin-top: 10px; }
   .pin-actions .btn { flex: 1; }
 </style>
@@ -411,7 +418,7 @@
   <section class="editor" id="editor" hidden aria-label="Editar lista">
     <div class="editor-head">
       <h2 id="form-title">Agregar regalo</h2>
-      <p>Se guarda en la nube al instante · <button type="button" class="lock-link" id="lock-btn">Bloquear edición</button></p>
+      <p>Se guarda en la nube al instante · <button type="button" class="lock-link" id="change-pin-btn">Cambiar PIN</button> · <button type="button" class="lock-link" id="lock-btn">Bloquear edición</button></p>
     </div>
     <form id="gift-form" autocomplete="off" novalidate>
       <div class="form-grid">
@@ -483,21 +490,27 @@
   </div>
 </div>
 
-<!-- Modal del PIN -->
+<!-- Modal del PIN: entrar, crear (primera vez), cambiar y restablecer -->
 <div class="modal" id="pin-modal" aria-hidden="true">
-  <form class="pin-box" id="pin-form" role="dialog" aria-modal="true" aria-labelledby="pin-title" novalidate>
+  <form class="pin-box" id="pin-form" role="dialog" aria-modal="true" aria-labelledby="pin-title" aria-describedby="pin-desc" novalidate>
     <button type="button" class="modal-close" id="pin-close" aria-label="Cerrar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
     <div class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
     <h2 id="pin-title">Editar lista</h2>
-    <p id="pin-desc">Escribe tu PIN para editar.</p>
-    <input type="password" id="pin-input" autocomplete="current-password" maxlength="64" aria-describedby="pin-error" placeholder="••••••">
+    <p id="pin-desc"></p>
+    <div id="pin-fields">
+      <label class="pin-field" id="pf-1"><span id="pl-1">PIN</span><input type="password" id="pin-1" maxlength="64" placeholder="••••"></label>
+      <label class="pin-field" id="pf-2"><span id="pl-2">PIN nuevo</span><input type="password" id="pin-2" maxlength="64" placeholder="••••"></label>
+      <label class="pin-field" id="pf-3"><span id="pl-3">Confirmar PIN</span><input type="password" id="pin-3" maxlength="64" placeholder="••••"></label>
+    </div>
+    <div class="pin-help" id="pin-help" hidden></div>
     <div class="pin-error" id="pin-error" role="alert"></div>
     <div class="pin-actions">
       <button type="button" class="btn btn-ghost" id="pin-cancel">Cancelar</button>
       <button type="submit" class="btn btn-green" id="pin-submit">Entrar</button>
     </div>
+    <button type="button" class="pin-link" id="pin-link" hidden></button>
   </form>
 </div>
 
@@ -614,14 +627,27 @@ const LISTAS = {
   let editId = null;
   let busy = false;
 
-  // PIN por lista: se recuerda solo mientras esta pestaña del navegador siga abierta
-  const PIN_KEY = o => 'wishlist-pin-' + o;
-  const getPin = o => { try { return sessionStorage.getItem(PIN_KEY(o)) || ''; } catch { return pinMem[o] || ''; } };
-  const pinMem = {};
-  function setPin(o, pin) {
-    pinMem[o] = pin;
-    try { pin ? sessionStorage.setItem(PIN_KEY(o), pin) : sessionStorage.removeItem(PIN_KEY(o)); } catch {}
+  // Sesión de edición por lista: al entrar con el PIN, Supabase entrega una llave temporal (30 días).
+  // El PIN nunca se guarda en el dispositivo; solo esa llave, que se puede cerrar con "Bloquear edición".
+  const SES_KEY = o => 'wishlist-sesion-' + o;
+  const sesMem = {};
+  function getSession(o) {
+    try {
+      const s = JSON.parse(localStorage.getItem(SES_KEY(o)) || 'null');
+      if (s && s.token && s.exp > Date.now()) return s.token;
+      localStorage.removeItem(SES_KEY(o));
+      return '';
+    } catch { return sesMem[o] || ''; }
   }
+  function setSession(o, token) {
+    sesMem[o] = token || '';
+    try {
+      if (token) localStorage.setItem(SES_KEY(o), JSON.stringify({ token, exp: Date.now() + 29 * 864e5 }));
+      else localStorage.removeItem(SES_KEY(o));
+    } catch {}
+  }
+  // Limpia el PIN en texto plano que guardaba la versión anterior
+  try { OWNERS.forEach(o => sessionStorage.removeItem('wishlist-pin-' + o)); } catch {}
 
   // ---------- Carga de regalos ----------
   const loadbar = $('loadbar');
@@ -928,23 +954,110 @@ const LISTAS = {
   }
   function refresh() { buildPills(); render(); }
 
-  // ---------- PIN ----------
+  // ---------- PIN: entrar, crear, cambiar, restablecer ----------
   const pinModal = $('pin-modal');
   const pinBox = $('pin-form');
-  let pinOwner = null, pinFocus = null;
+  const pinIn = [$('pin-1'), $('pin-2'), $('pin-3')];
+  let pin = { owner: null, mode: 'login', maestra: false, back: null };
+  let pinFocus = null;
 
-  function openPin(owner) {
-    pinOwner = owner;
-    pinFocus = document.activeElement;
-    $('pin-title').textContent = 'Editar lista de ' + LISTAS[owner].nombre;
-    $('pin-desc').textContent = 'Escribe el PIN de ' + LISTAS[owner].nombre + ' para agregar, editar o eliminar regalos.';
-    $('pin-input').value = '';
-    $('pin-error').textContent = '';
-    pinBox.classList.remove('error');
-    pinModal.classList.add('open');
-    pinModal.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('modal-open');
-    setTimeout(() => $('pin-input').focus(), 60);
+  const MODES = {
+    login: n => ({
+      title: 'Editar lista de ' + n,
+      desc: 'Escribe el PIN de ' + n + ' para agregar, editar o eliminar regalos.',
+      fields: [['PIN', 'current-password']],
+      submit: 'Entrar',
+      link: ['¿Olvidaste tu PIN?', 'reset']
+    }),
+    create: n => ({
+      title: 'Crea el PIN de ' + n,
+      desc: 'Es la primera vez que se edita esta lista. Elige un PIN de al menos 4 caracteres: se pedirá cada vez que alguien quiera editarla.',
+      fields: [['PIN nuevo', 'new-password'], ['Confirmar PIN', 'new-password']],
+      submit: 'Crear PIN'
+    }),
+    change: n => ({
+      title: 'Cambiar PIN de ' + n,
+      desc: 'Al cambiarlo, la edición se cierra en los demás dispositivos.',
+      fields: [['PIN actual', 'current-password'], ['PIN nuevo', 'new-password'], ['Confirmar PIN nuevo', 'new-password']],
+      submit: 'Guardar PIN',
+      link: ['¿Olvidaste tu PIN actual?', 'reset']
+    }),
+    reset: n => ({
+      title: 'Restablecer PIN de ' + n,
+      desc: 'Escribe la clave maestra de la wishlist y elige un PIN nuevo.',
+      fields: [['Clave maestra', 'off'], ['PIN nuevo', 'new-password'], ['Confirmar PIN nuevo', 'new-password']],
+      submit: 'Restablecer PIN',
+      link: ['Volver', 'back']
+    })
+  };
+
+  function showPinMode(mode) {
+    const n = LISTAS[pin.owner].nombre;
+    const cfg = MODES[mode](n);
+    if (mode !== 'reset') pin.back = mode;
+    pin.mode = mode;
+    $('pin-title').textContent = cfg.title;
+    $('pin-desc').textContent = cfg.desc;
+    pinIn.forEach((inp, k) => {
+      const f = cfg.fields[k];
+      const wrap = $('pf-' + (k + 1));
+      wrap.hidden = !f;
+      wrap.classList.toggle('solo', cfg.fields.length === 1);
+      inp.value = '';
+      if (f) { $('pl-' + (k + 1)).textContent = f[0]; inp.autocomplete = f[1]; inp.placeholder = k === 0 && mode === 'reset' ? 'Clave maestra' : '••••'; }
+    });
+    // Sin clave maestra: explica cómo restablecerlo desde Supabase
+    const noKey = mode === 'reset' && !pin.maestra;
+    const help = $('pin-help');
+    help.hidden = !noKey;
+    if (noKey) {
+      $('pin-desc').textContent = 'Esta wishlist todavía no tiene clave maestra.';
+      help.innerHTML = 'Quien administra Supabase puede restablecerlo: en <b>SQL Editor</b> corre <code></code> y la próxima vez la página pedirá crear un PIN nuevo. También puede configurar una clave maestra en el script.';
+      help.querySelector('code').textContent = "delete from public.pines where owner = '" + pin.owner + "';";
+      $('pin-fields').hidden = true;
+    } else $('pin-fields').hidden = false;
+    $('pin-submit').hidden = noKey;
+    $('pin-submit').textContent = cfg.submit;
+    $('pin-cancel').textContent = noKey ? 'Cerrar' : 'Cancelar';
+    const link = $('pin-link');
+    link.hidden = !cfg.link;
+    if (cfg.link) { link.textContent = cfg.link[0]; link.dataset.go = cfg.link[1]; }
+    pinError('');
+    if (!noKey) setTimeout(() => pinIn[0].focus(), 60);
+  }
+
+  function pinError(msg) {
+    $('pin-error').textContent = msg;
+    pinBox.classList.toggle('error', !!msg);
+    if (msg) { pinBox.classList.remove('shake'); void pinBox.offsetWidth; pinBox.classList.add('shake'); }
+  }
+
+  async function fetchPinState(owner) {
+    const { data, error } = await sb.rpc('estado_pin', { p_owner: owner });
+    if (error) throw error;
+    return { configurado: !!(data && data.configurado), maestra: !!(data && data.clave_maestra) };
+  }
+
+  // Abre el modal en el modo correcto: crear (si la lista no tiene PIN) o entrar
+  async function openAccess(owner, mode) {
+    const btn = $('edit-toggle');
+    btn.disabled = true;
+    try {
+      const st = await fetchPinState(owner);
+      pin = { owner, mode: 'login', maestra: st.maestra, back: null };
+      if (!st.configurado) mode = 'create';
+      else if (!mode) mode = 'login';
+      pinFocus = document.activeElement;
+      pinModal.classList.add('open');
+      pinModal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+      showPinMode(mode);
+    } catch (e) {
+      console.error(e);
+      toast('No se pudo conectar con la nube. Inténtalo de nuevo.');
+    } finally {
+      btn.disabled = false;
+    }
   }
   function closePin() {
     if (!pinModal.classList.contains('open')) return;
@@ -956,32 +1069,57 @@ const LISTAS = {
   $('pin-close').addEventListener('click', closePin);
   $('pin-cancel').addEventListener('click', closePin);
   pinModal.addEventListener('click', e => { if (e.target === pinModal) closePin(); });
+  $('pin-link').addEventListener('click', () => {
+    const go = $('pin-link').dataset.go;
+    showPinMode(go === 'back' ? (pin.back || 'login') : go);
+  });
+
+  const ERR = {
+    '28P01': { login: 'PIN incorrecto. Inténtalo de nuevo.', change: 'El PIN actual no es correcto.', reset: 'La clave maestra no es correcta.' },
+    '22023': 'El PIN debe tener entre 4 y 64 caracteres.',
+    '23505': 'Esta lista ya tiene un PIN. Escríbelo para entrar.',
+    'P0002': 'Esta wishlist no tiene clave maestra configurada.'
+  };
 
   pinBox.addEventListener('submit', async e => {
     e.preventDefault();
-    const pin = $('pin-input').value;
-    if (!pin) { $('pin-input').focus(); return; }
+    const mode = pin.mode, owner = pin.owner;
+    const [v1, v2, v3] = pinIn.map(i => i.value);
+    const nuevo = mode === 'create' ? v1 : v2;
+    const confirma = mode === 'create' ? v2 : v3;
+    if (!v1) { pinIn[0].focus(); return; }
+    if (mode !== 'login') {
+      if (nuevo.length < 4) { pinError('El PIN nuevo debe tener al menos 4 caracteres.'); pinIn[mode === 'create' ? 0 : 1].focus(); return; }
+      if (nuevo !== confirma) { pinError('Los PIN no coinciden. Escríbelos de nuevo.'); pinIn[mode === 'create' ? 1 : 2].select(); return; }
+      if (mode === 'change' && nuevo === v1) { pinError('El PIN nuevo debe ser distinto del actual.'); pinIn[1].select(); return; }
+    }
+    const calls = {
+      login:  ['iniciar_sesion',  { p_owner: owner, p_pin: v1 }],
+      create: ['crear_pin',       { p_owner: owner, p_pin: v1 }],
+      change: ['cambiar_pin',     { p_owner: owner, p_pin_actual: v1, p_pin_nuevo: v2 }],
+      reset:  ['restablecer_pin', { p_owner: owner, p_clave_maestra: v1, p_pin_nuevo: v2 }]
+    };
     const btn = $('pin-submit');
-    btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Verificando';
+    const label = btn.textContent;
+    btn.disabled = true; btn.innerHTML = '<span class="spin"></span>' + (mode === 'login' ? 'Verificando' : 'Guardando');
     try {
-      const { data, error } = await sb.rpc('pin_valido', { p_owner: pinOwner, p_pin: pin });
+      const { data, error } = await sb.rpc(...calls[mode]);
       if (error) throw error;
-      if (data === true) {
-        setPin(pinOwner, pin);
-        closePin();
-        if (pinOwner === current) setEditing(true);
-        toast('Modo edición activado');
-      } else {
-        $('pin-error').textContent = 'PIN incorrecto. Inténtalo de nuevo.';
-        pinBox.classList.add('error');
-        pinBox.classList.remove('shake'); void pinBox.offsetWidth; pinBox.classList.add('shake');
-        $('pin-input').select();
-      }
+      if (!data) throw new Error('Sin respuesta');
+      setSession(owner, data);
+      closePin();
+      if (owner === current && !editing) setEditing(true);
+      toast({ login: 'Modo edición activado', create: '🔒 PIN creado. Modo edición activado', change: 'PIN actualizado', reset: 'PIN restablecido. Modo edición activado' }[mode]);
     } catch (err) {
       console.error(err);
-      $('pin-error').textContent = 'No se pudo verificar. Revisa la conexión.';
+      const m = err && ERR[err.code];
+      const msg = typeof m === 'object' ? m[mode] : m;
+      if (err && err.code === '23505') { showPinMode('login'); pinError(msg); }
+      else pinError(msg || 'No se pudo conectar. Revisa tu internet e inténtalo de nuevo.');
+      const first = pinIn.find(i => !i.closest('label').hidden);
+      if (first) first.select();
     } finally {
-      btn.disabled = false; btn.textContent = 'Entrar';
+      btn.disabled = false; btn.textContent = label;
     }
   });
 
@@ -1007,16 +1145,19 @@ const LISTAS = {
   }
   $('edit-toggle').addEventListener('click', () => {
     if (editing) { setEditing(false); return; }
-    if (getPin(current)) {
+    if (getSession(current)) {
       setEditing(true);
       $('editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else openPin(current);
+    } else openAccess(current);
   });
   $('lock-btn').addEventListener('click', () => {
-    setPin(current, '');
+    const token = getSession(current);
+    if (token) sb.rpc('cerrar_sesion', { p_token: token }).then(() => {}, () => {});
+    setSession(current, '');
     setEditing(false);
-    toast('Edición bloqueada en este navegador');
+    toast('Edición bloqueada en este dispositivo');
   });
+  $('change-pin-btn').addEventListener('click', () => openAccess(current, 'change'));
 
   function resetForm() {
     form.reset();
@@ -1052,15 +1193,15 @@ const LISTAS = {
   }
   $('form-cancel').addEventListener('click', () => { resetForm(); render(); });
 
-  // Si el PIN dejó de servir (lo cambiaron), pide de nuevo
+  // Si la sesión venció o cambiaron el PIN en otro dispositivo, pide el PIN de nuevo
   function handleWriteError(err) {
     console.error(err);
     const msg = (err && (err.message || err.details)) || '';
-    if ((err && err.code === '28P01') || /PIN incorrecto/i.test(msg)) {
-      setPin(current, '');
+    if ((err && err.code === '28P01') || /Sesión vencida/i.test(msg)) {
+      setSession(current, '');
       setEditing(false);
-      toast('El PIN no es válido. Vuelve a ingresarlo.');
-      openPin(current);
+      toast('Tu acceso de edición venció. Escribe el PIN de nuevo.');
+      openAccess(current);
       return;
     }
     if (/no existe/i.test(msg)) { toast('Ese regalo ya no existe; actualicé la lista'); loadList(current); return; }
@@ -1079,7 +1220,7 @@ const LISTAS = {
     if (imagen && !safeUrl(imagen)) { $('f-imagen').focus(); toast('La URL de la imagen debe empezar con http:// o https://'); return; }
     const categoria = catFor(fCat.value, owner);
     const params = {
-      p_owner: owner, p_pin: getPin(owner),
+      p_owner: owner, p_token: getSession(owner),
       p_nombre: nombre.slice(0, 140), p_categoria: categoria,
       p_precio: parsePrice($('f-precio').value),
       p_imagen: imagen, p_tienda: tienda,
@@ -1115,7 +1256,7 @@ const LISTAS = {
     busy = true;
     setLoading(true);
     try {
-      const { error } = await sb.rpc('eliminar_regalo', { p_id: id, p_owner: owner, p_pin: getPin(owner) });
+      const { error } = await sb.rpc('eliminar_regalo', { p_id: id, p_owner: owner, p_token: getSession(owner) });
       if (error) throw error;
       if (editId === id) resetForm();
       cache[owner] = cache[owner].filter(x => x.id !== id);
